@@ -1,11 +1,12 @@
 #ifndef MAP_HPP
 # define MAP_HPP
 #include <memory>
+#include <utility>
 #include "iterator.hpp"
 #include "utility.hpp"
 
 namespace ft {
-  template <class Key, class T, class Compare = std::less<Key>,
+  template <class Key, class T, class Compare = less<Key>,
            class Allocator = std::allocator<pair<const Key, T> > >
              class map {
                private:
@@ -30,7 +31,7 @@ namespace ft {
                  typedef std::reverse_iterator<iterator> reverse_iterator;
                  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
                  class value_compare
-                   : public std::binary_function<value_type,value_type,bool> {
+                   : public binary_function<value_type,value_type,bool> {
                      friend class map;
                      protected:
                      Compare comp;

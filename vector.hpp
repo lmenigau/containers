@@ -2,6 +2,8 @@
 #define VECTOR_HPP
 #include <memory>
 #include "iterator.hpp"
+#include "type_traits.h"
+
 namespace ft {
   template <class T, class Allocator = std::allocator<T> >
     class vector {
@@ -24,14 +26,29 @@ namespace ft {
         typedef std::reverse_iterator<iterator> reverse_iterator;
         typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
         // 23.2.4.1 construct/copy/destroy:
-        explicit vector(const Allocator& = Allocator());
+        explicit vector(const Allocator& a = Allocator())
+        {
+
+        }
         explicit vector(size_type n, const T& value = T(),
-            const Allocator& = Allocator());
+            const Allocator& = Allocator())
+        {
+
+        }
         template <class InputIterator>
           vector(InputIterator first, InputIterator last,
-              const Allocator& = Allocator());
-        vector(const vector<T,Allocator>& x);
-        ~vector();
+              const Allocator& = Allocator())
+          {
+
+          }
+        vector(const vector<T,Allocator>& x)
+        {
+
+        }
+        ~vector() 
+        {
+
+        }
         vector<T,Allocator>& operator=(const vector<T,Allocator>& x);
         template <class InputIterator>
           void assign(InputIterator first, InputIterator last);
