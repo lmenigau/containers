@@ -3,6 +3,7 @@
 #include "iterator.hpp"
 #include "type_traits.h"
 #include <memory>
+#include <iostream>
 
 namespace ft
 {
@@ -14,6 +15,7 @@ namespace ft
         struct VecIterator
         : iterator<bidirectional_iterator_tag, It, ptrdiff_t, It *, It &> {
         };
+      typedef typename Allocator::template rebind<T>::other Ralloc;
 
     public:
       // types:
@@ -31,25 +33,30 @@ namespace ft
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
       // 23.2.4.1 construct/copy/destroy:
     private:
-      Allocator alloc;
+      Ralloc alloc;
+      pointer   vec;
       size_type _size;
       size_type _capacity;
 
     public:
-      explicit vector(const Allocator &a = Allocator())
-        : alloc(a), _size(0), _capacity(0)
-      {
+      vector() {
       }
+      explicit vector(const Allocator &a)
+        :  alloc(Allocator(a)), _size(0), _capacity(0) { 
+          std::cout << "ft_allocator_type\n";
+        }
       explicit vector(size_type n, const T &value = T(),
           const Allocator &a = Allocator())
-        : alloc(a), _size(n), _capacity(n)
-      {
-      }
+        :  vec(alloc.allocate(n)), _size(n), _capacity(n) {
+          std::cout << "ft_size_type , T\n";
+        }
       template <class InputIterator>
         vector(InputIterator first, InputIterator last,
-            const Allocator &a = Allocator())
-        : alloc(a), _size(0), _capacity(0)
-        {
+            const allocator_type &a = Allocator())
+        : _size(0), _capacity(0) {
+          std::cout << "ft_first, last\n";
+          //typedef typename is_integral<InputIterator>::value _Integral;
+          //_Integral();
         }
       vector(const vector<T, Allocator> &x) {}
       ~vector() {}
@@ -57,7 +64,9 @@ namespace ft
       template <class InputIterator>
         void assign(InputIterator first, InputIterator last);
       void assign(size_type n, const T &u);
-      allocator_type get_allocator() const;
+      allocator_type get_allocator() const {
+        return alloc;
+      };
       // iterators:
       iterator begin();
       const_iterator begin() const;
@@ -68,12 +77,18 @@ namespace ft
       reverse_iterator rend();
       const_reverse_iterator rend() const;
       // 23.2.4.2 capacity:
-      size_type size() const { return size; }
-      size_type max_size() const;
+      size_type size() const { return _size; }
+      size_type max_size() const { return alloc.max_size(); };
       void resize(size_type sz, T c = T());
-      size_type capacity() const { return capacity; }
+      size_type capacity() const { return _capacity; }
       bool empty() const;
-      void reserve(size_type n);
+      void reserve(size_type n)
+      {
+        if ( n <= _capacity)
+          return ;
+        alloc.allocate(n);
+        _capacity = n;
+      };
       // element access:
       reference operator[](size_type n);
       const_reference operator[](size_type n) const;
@@ -84,7 +99,9 @@ namespace ft
       reference back();
       const_reference back() const;
       // 23.2.4.3 modifiers:
-      void push_back(const T &x);
+      void push_back(const T &x)
+      {
+      };
       void pop_back();
       iterator insert(iterator position, const T &x);
       void insert(iterator position, size_type n, const T &x);

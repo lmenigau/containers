@@ -1,5 +1,5 @@
-CXX		= zig c++
-CXXFLAGS = -std=c++98 -Wall -Wextra -Werror -Wno-unused-parameter
+CXX		= c++
+CXXFLAGS = -g -std=c++98 -Wall -Wextra -Werror -Wno-unused-parameter
 test : main.cpp
 	$(CXX) $(CXXFLAGS) main.cpp -o test
 
