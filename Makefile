@@ -1,5 +1,6 @@
 CXX		= c++
-CXXFLAGS = -g -std=c++98 -Wall -Wextra -Werror -Wno-unused-parameter
+SANFLAGS = -fsanitize=address
+CXXFLAGS := $(SANFLAGS) -g -std=c++98 -Wall -Wextra -Werror -Wno-unused-parameter
 test : main.cpp
 	$(CXX) $(CXXFLAGS) main.cpp -o test
 

@@ -39,10 +39,11 @@ namespace ft
       size_type _capacity;
 
     public:
-      vector() {
+      vector() :vec(0), _size(0), _capacity(0) {
       }
+
       explicit vector(const Allocator &a)
-        :  alloc(Allocator(a)), _size(0), _capacity(0) { 
+        :  alloc(a), _size(0), _capacity(0) { 
           std::cout << "ft_allocator_type\n";
         }
       explicit vector(size_type n, const T &value = T(),
@@ -55,11 +56,15 @@ namespace ft
             const allocator_type &a = Allocator())
         : _size(0), _capacity(0) {
           std::cout << "ft_first, last\n";
-          //typedef typename is_integral<InputIterator>::value _Integral;
-          //_Integral();
+          typedef typename is_integral<InputIterator>::value _Integral;
+          _Integral();
         }
+
       vector(const vector<T, Allocator> &x) {}
-      ~vector() {}
+      ~vector() {
+		  alloc.deallocate(vec, _capacity);
+	  }
+
       vector<T, Allocator> &operator=(const vector<T, Allocator> &x);
       template <class InputIterator>
         void assign(InputIterator first, InputIterator last);
@@ -84,10 +89,16 @@ namespace ft
       bool empty() const;
       void reserve(size_type n)
       {
+        //std::cout << "ft->reserve: "<< n << std::endl;
+        pointer new_vec;
         if ( n <= _capacity)
           return ;
-        alloc.allocate(n);
+        new_vec = alloc.allocate(n);
+        for (size_type i = 0; i < _size; i++)
+          vec[i] = new_vec[i];
+        alloc.deallocate(vec, _capacity);
         _capacity = n;
+        vec = new_vec;
       };
       // element access:
       reference operator[](size_type n);
@@ -101,7 +112,16 @@ namespace ft
       // 23.2.4.3 modifiers:
       void push_back(const T &x)
       {
+        if (_size < _capacity) {
+          vec[_size] = x;
+        }
+        else {
+          reserve(_size > 0 ? _size * 2 : 1);
+          vec[_size] = x;
+        }
+        _size++;
       };
+
       void pop_back();
       iterator insert(iterator position, const T &x);
       void insert(iterator position, size_type n, const T &x);
