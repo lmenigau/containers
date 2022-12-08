@@ -49,8 +49,14 @@ class NAlloc : std::allocator<T> {
     std::cout << "max_size\n";
     return -1;
   }
-  void construct(pointer p, const T &val) { std::cout << "construct\n"; }
-  void destroy(pointer p) { std::cout << "destroy\n"; }
+  void construct(pointer p, const T &val) {
+    std::cout << "construct\n";
+    new ((void *)p) T(val);
+  }
+  void destroy(pointer p) {
+    std::cout << "destroy\n";
+    ((T *)p)->~T();
+  }
 };
 
 template <class T, class U>
@@ -67,7 +73,7 @@ int main() {
 
   std::cout << "using reserve: \n";
   {
-    std::vector<int, NAlloc<int> > v1;
+    ft::vector<int, NAlloc<int> > v1;
     v1.reserve(
         max_elements);  // reserves at least max_elements * sizeof(int) bytes
 
@@ -76,7 +82,7 @@ int main() {
 
   std::cout << "not using reserve: \n";
   {
-    std::vector<int, NAlloc<int> > v1;
+    ft::vector<int, NAlloc<int> > v1;
 
     for (int n = 0; n < max_elements; ++n) {
       if (v1.size() == v1.capacity()) {
