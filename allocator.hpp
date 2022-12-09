@@ -2,7 +2,7 @@
 #include <iostream>
 
 template <class T>
-class NAlloc : std::allocator<T> {
+class allocator : std::allocator<T> {
  public:
   typedef size_t size_type;
   typedef std::ptrdiff_t difference_type;
@@ -13,15 +13,15 @@ class NAlloc : std::allocator<T> {
   typedef T value_type;
   template <class U>
   struct rebind {
-    typedef NAlloc<U> other;
+    typedef allocator<U> other;
   };
-  NAlloc() throw() { std::cout << "Nalloc constructor\n"; }
-  NAlloc(const NAlloc &) throw() { std::cout << "Nalloc copy constructor\n"; }
+  allocator() throw() { std::cout << "Nalloc constructor\n"; }
+  allocator(const allocator &) throw() { std::cout << "Nalloc copy constructor\n"; }
   template <class U>
-  NAlloc(const NAlloc<U> &) throw() {
+  allocator(const allocator<U> &) throw() {
     std::cout << "Nalloc template copy constructor\n";
   }
-  ~NAlloc() throw() {}
+  ~allocator() throw() {}
   pointer address(reference x) const {
     std::cout << "Nalloc address\n";
     return &x;
@@ -54,10 +54,10 @@ class NAlloc : std::allocator<T> {
 };
 
 template <class T, class U>
-bool operator==(const NAlloc<T> &, const NAlloc<U> &) {
+bool operator==(const allocator<T> &, const allocator<U> &) {
   return true;
 }
 template <class T, class U>
-bool operator!=(const NAlloc<T> &, const NAlloc<U> &) {
+bool operator!=(const allocator<T> &, const allocator<U> &) {
   return false;
 }

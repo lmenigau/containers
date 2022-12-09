@@ -15,7 +15,7 @@ int main() {
 
   std::cout << "using reserve: \n";
   {
-    NS::vector<int, NAlloc<int> > v1;
+    NS::vector<int, allocator<int> > v1;
     v1.reserve(max_elements);
 
     for (int n = 0; n < max_elements; ++n) v1.push_back(n);
@@ -23,7 +23,7 @@ int main() {
 
   std::cout << "not using reserve: \n";
   {
-    NS::vector<int, NAlloc<int> > v1;
+    NS::vector<int, allocator<int> > v1;
 
     for (int n = 0; n < max_elements; ++n) {
       if (v1.size() == v1.capacity()) {
