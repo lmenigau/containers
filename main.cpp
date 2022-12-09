@@ -7,6 +7,10 @@
 
 // minimal C++11 allocator with debug output
 
+#ifndef NS
+#define NS ft
+#endif
+
 template <class T>
 class NAlloc : std::allocator<T> {
  public:
@@ -69,20 +73,19 @@ bool operator!=(const NAlloc<T> &, const NAlloc<U> &) {
 }
 
 int main() {
-  const int max_elements = 1023;
+  const int max_elements = 32;
 
   std::cout << "using reserve: \n";
   {
-    ft::vector<int, NAlloc<int> > v1;
-    v1.reserve(
-        max_elements);  // reserves at least max_elements * sizeof(int) bytes
+    NS::vector<int, NAlloc<int> > v1;
+    v1.reserve(max_elements);  // reserves at least max_elements * sizeof(int) bytes
 
     for (int n = 0; n < max_elements; ++n) v1.push_back(n);
   }
 
   std::cout << "not using reserve: \n";
   {
-    ft::vector<int, NAlloc<int> > v1;
+    NS::vector<int, NAlloc<int> > v1;
 
     for (int n = 0; n < max_elements; ++n) {
       if (v1.size() == v1.capacity()) {

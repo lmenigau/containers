@@ -78,34 +78,37 @@ class vector {
   size_type max_size() const { return alloc.max_size(); };
   void resize(size_type sz, T c = T());
   size_type capacity() const { return _capacity; }
-  bool empty() const;
+  bool empty() const {}
+
   void reserve(size_type n) {
     // std::cout << "ft->reserve: "<< n << std::endl;
     pointer new_vec;
     if (n <= _capacity) return;
     new_vec = alloc.allocate(n);
-    for (size_type i = 0; i < _size; i++) vec[i] = new_vec[i];
+    for (size_type i = 0; i < _size; i++) {
+      vec[i] = new_vec[i];
+      alloc.destroy(vec + i);
+    }
     alloc.deallocate(vec, _capacity);
     _capacity = n;
     vec = new_vec;
   };
   // element access:
-  reference operator[](size_type n);
-  const_reference operator[](size_type n) const;
-  const_reference at(size_type n) const;
-  reference at(size_type n);
-  reference front();
-  const_reference front() const;
-  reference back();
-  const_reference back() const;
+  reference operator[](size_type n) { return *(vec + n); }
+  const_reference operator[](size_type n) const { return *(vec + n); }
+  const_reference at(size_type n) const { return this[n]; }
+  reference at(size_type n) { return this[n]; }
+  reference front() { return vec; }
+  const_reference front() const { return vec; }
+  reference back() { return *(vec + _size - 1); }
+  const_reference back() const { return back(); }
   // 23.2.4.3 modifiers:
   void push_back(const T &x) {
-    if (_size < _capacity) {
-      vec[_size] = x;
-    } else {
-      reserve(_size > 0 ? _size * 2 : 1);
-      vec[_size] = x;
-    }
+    if (_size == 0)
+      reserve(1);
+    else if (_size == _capacity)
+      reserve(_size * 2);
+    alloc.construct(vec + _size, x);
     _size++;
   };
 
