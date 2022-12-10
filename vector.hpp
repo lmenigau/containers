@@ -61,11 +61,15 @@ class vector {
 
   vector<T, Allocator> &operator=(const vector<T, Allocator> &x);
   template <class InputIterator>
-  void assign(InputIterator first, InputIterator last);
+  void assign(InputIterator first, InputIterator last)
+  {
+    for (size_type i = 0 ; first < last; i++)
+      alloc.construct(vec + i, *first);
+  }
   void assign(size_type n, const T &u)
   {
     for (size_type i = 0; i <  n && i < _size; i++)
-      alloc.construct(vec + i, );
+      alloc.construct(vec + i, u);
   };
   allocator_type get_allocator() const { return alloc; };
 
