@@ -19,7 +19,6 @@ DEPS = $(SRC:.cpp=.d)
 
 include $(DEPS)
 
-
 std.out: std
 	./std > std.out
 
@@ -32,16 +31,16 @@ $(OBJ_FT): ft_%.o: %.cpp
 $(OBJ_STD): std_%.o: %.cpp 
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-ft : CXXFLAGS += -D NS=ft
+ft: CXXFLAGS += -D NS=ft
 ft: $(OBJ_FT)
 	$(CXX) $(CXXFLAGS) $(OBJ_FT) -o $@
-std : CXXFLAGS += -D NS=std
+std: CXXFLAGS += -D NS=std
 std: $(OBJ_STD)
 	$(CXX) $(CXXFLAGS) $(OBJ_STD) -o $@
 
 .PHONY: re
 
-clean : 
+clean:
 	$(RM) std ft std.out ft.out *.o
 
-re	: clean test
+re	: clean diff
