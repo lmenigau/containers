@@ -55,15 +55,20 @@ class vector {
     typedef typename is_integral<InputIterator>::value _Integral;
     _Integral();
   }
-
   vector(const vector<T, Allocator> &x) {}
+
   ~vector() { alloc.deallocate(vec, _capacity); }
 
   vector<T, Allocator> &operator=(const vector<T, Allocator> &x);
   template <class InputIterator>
   void assign(InputIterator first, InputIterator last);
-  void assign(size_type n, const T &u);
+  void assign(size_type n, const T &u)
+  {
+    for (size_type i = 0; i <  n && i < _size; i++)
+      alloc.construct(vec + i, );
+  };
   allocator_type get_allocator() const { return alloc; };
+
   // iterators:
   iterator begin();
   const_iterator begin() const;
@@ -73,6 +78,7 @@ class vector {
   const_reverse_iterator rbegin() const;
   reverse_iterator rend();
   const_reverse_iterator rend() const;
+
   // 23.2.4.2 capacity:
   size_type size() const { return _size; }
   size_type max_size() const { return alloc.max_size(); };
@@ -81,7 +87,6 @@ class vector {
   bool empty() const {}
 
   void reserve(size_type n) {
-    // std::cout << "ft->reserve: "<< n << std::endl;
     pointer new_vec;
     if (n <= _capacity) return;
     new_vec = alloc.allocate(n);
@@ -93,6 +98,7 @@ class vector {
     _capacity = n;
     vec = new_vec;
   };
+
   // element access:
   reference operator[](size_type n) { return *(vec + n); }
   const_reference operator[](size_type n) const { return *(vec + n); }
@@ -102,6 +108,7 @@ class vector {
   const_reference front() const { return vec; }
   reference back() { return *(vec + _size - 1); }
   const_reference back() const { return back(); }
+
   // 23.2.4.3 modifiers:
   void push_back(const T &x) {
     if (_size == 0)

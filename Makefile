@@ -2,11 +2,13 @@ CXX		= c++
 SANFLAGS = -fsanitize=address
 CXXFLAGS := $(SANFLAGS) -g -std=c++98 -Wall -Wextra -Werror -Wno-unused-parameter
 SRC = main.cpp
-.PHONY: test
-OBJ = $(SRC:.c=.o)
+OBJ_FT := $(addprefix ft_, $(SRC:.cpp=.o))
+OBJ_STD := $(addprefix std_, $(SRC:.cpp=.o))
 
-test.out : std.out ft.out
-	diff std.out ft.out > test.out | exit 0
+.PHONY: test
+
+diff : std.out ft.out
+	diff std.out ft.out > $@ | exit 0
 
 DEPS = $(SRC:.cpp=.d)
 %.d: %.cpp
@@ -24,16 +26,22 @@ std.out: std
 ft.out: ft
 	./ft > ft.out
 
-std : $(OBJ)
-	$(CXX) $(CXXFLAGS) -D NS=std $(OBJ) -o std
+$(OBJ_FT): ft_%.o: %.cpp
+	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-ft : $(OBJ)
-	$(CXX) $(CXXFLAGS) -D NS=ft $(OBJ) -o ft
+$(OBJ_STD): std_%.o: %.cpp 
+	$(CXX) -c $(CXXFLAGS) $< -o $@
 
+ft : CXXFLAGS += -D NS=ft
+ft: $(OBJ_FT)
+	$(CXX) $(CXXFLAGS) $(OBJ_FT) -o $@
+std : CXXFLAGS += -D NS=std
+std: $(OBJ_STD)
+	$(CXX) $(CXXFLAGS) $(OBJ_STD) -o $@
 
 .PHONY: re
 
 clean : 
-	$(RM) std ft std.out ft.out
+	$(RM) std ft std.out ft.out *.o
 
 re	: clean test
