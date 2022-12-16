@@ -4,11 +4,10 @@
 #include "allocator.hpp"
 #include "vector.hpp"
 
-// minimal C++11 allocator with debug output
-
 #ifndef NS
 #define NS ft
 #endif
+void clear();
 
 int main() {
   const int max_elements = 32;
@@ -27,9 +26,14 @@ int main() {
 
     for (int n = 0; n < max_elements; ++n) {
       if (v1.size() == v1.capacity()) {
-        std::cout << "size() == capacity() == " << v1.size() << '\n';
       }
+      std::cout << "push:" << n << " size:" << v1.size()
+                << " capa:" << v1.capacity() << "\n";
       v1.push_back(n);
     }
+    for (int n = 0; n < max_elements; ++n) {
+      std::cout << "v: " << v1[n] << '\n';
+    }
   }
+  clear();
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <limits>
 
 template <class T>
 class allocator : std::allocator<T> {
@@ -41,10 +42,10 @@ class allocator : std::allocator<T> {
   }
   size_type max_size() const throw() {
     std::cout << "max_size\n";
-    return -1;
+    return std::numeric_limits<size_type>::max() / sizeof(value_type);
   }
   void construct(pointer p, const T &val) {
-    std::cout << "construct\n";
+    std::cout << "construct: " << val << '\n';
     new ((void *)p) T(val);
   }
   void destroy(pointer p) {

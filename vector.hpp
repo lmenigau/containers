@@ -2,6 +2,7 @@
 #define VECTOR_HPP
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 
 #include "iterator.hpp"
 #include "type_traits.h"
@@ -12,23 +13,23 @@ class vector {
  private:
   template <class It>
   struct VecIterator
-      : iterator<bidirectional_iterator_tag, It, ptrdiff_t, It *, It &> {};
+      : iterator<random_access_iterator_tag, It, ptrdiff_t, It *, It &> {};
   typedef typename Allocator::template rebind<T>::other Ralloc;
 
  public:
   // types:
   typedef typename Allocator::reference reference;
   typedef typename Allocator::const_reference const_reference;
-  typedef VecIterator<T> iterator;
-  typedef VecIterator<const T> const_iterator;
+  typedef T *iterator;
+  typedef const T *const_iterator;
   typedef size_t size_type;
-  typedef typename iterator::difference_type difference_type;
+  typedef typename iterator_traits<iterator>::difference_type difference_type;
   typedef T value_type;
   typedef Allocator allocator_type;
   typedef typename Allocator::pointer pointer;
   typedef typename Allocator::const_pointer const_pointer;
-  typedef std::reverse_iterator<iterator> reverse_iterator;
-  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+  typedef ft::reverse_iterator<iterator> reverse_iterator;
+  typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
   // 23.2.4.1 construct/copy/destroy:
  private:
   Ralloc alloc;
@@ -57,48 +58,50 @@ class vector {
   }
   vector(const vector<T, Allocator> &x) {}
 
-  ~vector() { alloc.deallocate(vec, _capacity); }
+  ~vector() {
+    for (size_t i = 0; i < _size; i++) alloc.destroy(vec + i);
+    alloc.deallocate(vec, _capacity);
+  }
 
   vector<T, Allocator> &operator=(const vector<T, Allocator> &x);
   template <class InputIterator>
-  void assign(InputIterator first, InputIterator last)
-  {
-    for (size_type i = 0 ; first < last; i++)
-      alloc.construct(vec + i, *first);
+  void assign(InputIterator first, InputIterator last) {
+    for (size_type i = 0; first < last; i++) alloc.construct(vec + i, *first);
   }
-  void assign(size_type n, const T &u)
-  {
-    for (size_type i = 0; i <  n && i < _size; i++)
-      alloc.construct(vec + i, u);
+  void assign(size_type n, const T &u) {
+    for (size_type i = 0; i < n && i < _size; i++) alloc.construct(vec + i, u);
   };
   allocator_type get_allocator() const { return alloc; };
 
   // iterators:
-  iterator begin();
-  const_iterator begin() const;
-  iterator end();
-  const_iterator end() const;
-  reverse_iterator rbegin();
-  const_reverse_iterator rbegin() const;
-  reverse_iterator rend();
-  const_reverse_iterator rend() const;
+  iterator begin() { return vec; }
+  const_iterator begin() const { return vec; }
+  iterator end() { return vec + _size; }
+  const_iterator end() const { return vec + _size; }
+  reverse_iterator rbegin() { return reverse_iterator(end()); }
+  const_reverse_iterator rbegin() const { return reverse_iterator(end()); }
+  reverse_iterator rend() { return reverse_iterator(begin()); }
+  const_reverse_iterator rend() const { return reverse_iterator(begin()); }
 
   // 23.2.4.2 capacity:
   size_type size() const { return _size; }
   size_type max_size() const { return alloc.max_size(); };
   void resize(size_type sz, T c = T());
   size_type capacity() const { return _capacity; }
-  bool empty() const {}
+  bool empty() const {};
 
   void reserve(size_type n) {
     pointer new_vec;
     if (n <= _capacity) return;
+    if (n > max_size()) throw std::length_error("");
     new_vec = alloc.allocate(n);
     for (size_type i = 0; i < _size; i++) {
-      vec[i] = new_vec[i];
+      alloc.construct(new_vec + i, vec[i]);
+    }
+    for (size_type i = 0; i < _size; i++) {
       alloc.destroy(vec + i);
     }
-    alloc.deallocate(vec, _capacity);
+    if (_capacity) alloc.deallocate(vec, _capacity);
     _capacity = n;
     vec = new_vec;
   };
@@ -131,7 +134,7 @@ class vector {
   iterator erase(iterator position);
   iterator erase(iterator first, iterator last);
   void swap(vector<T, Allocator> &);
-  void clear();
+  void clear() { _size = 0; }
 };
 }  // namespace ft
 #endif
