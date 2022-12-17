@@ -40,21 +40,20 @@ class vector {
  public:
   vector() : vec(0), _size(0), _capacity(0) {}
 
-  explicit vector(const Allocator &a) : alloc(a), _size(0), _capacity(0) {
-    std::cout << "ft_allocator_type\n";
-  }
+  explicit vector(const Allocator &a)
+      : alloc(a), vec(0), _size(0), _capacity(0) {}
   explicit vector(size_type n, const T &value = T(),
                   const Allocator &a = Allocator())
       : vec(alloc.allocate(n)), _size(n), _capacity(n) {
-    std::cout << "ft_size_type , T\n";
+    assign(n, value);
   }
   template <class InputIterator>
   vector(InputIterator first, InputIterator last,
          const allocator_type &a = Allocator())
       : _size(0), _capacity(0) {
-    std::cout << "ft_first, last\n";
     typedef typename is_integral<InputIterator>::value _Integral;
     _Integral();
+    assign(first, last);
   }
   vector(const vector<T, Allocator> &x) {}
 
@@ -66,12 +65,14 @@ class vector {
   vector<T, Allocator> &operator=(const vector<T, Allocator> &x);
   template <class InputIterator>
   void assign(InputIterator first, InputIterator last) {
-    for (size_type i = 0; first < last; i++) alloc.construct(vec + i, *first);
+    for (; first < last; first++) {
+      push_back(*first);
+    }
   }
   void assign(size_type n, const T &u) {
     for (size_type i = 0; i < n && i < _size; i++) alloc.construct(vec + i, u);
-  };
-  allocator_type get_allocator() const { return alloc; };
+  }
+  allocator_type get_allocator() const { return alloc; }
 
   // iterators:
   iterator begin() { return vec; }
@@ -85,10 +86,10 @@ class vector {
 
   // 23.2.4.2 capacity:
   size_type size() const { return _size; }
-  size_type max_size() const { return alloc.max_size(); };
+  size_type max_size() const { return alloc.max_size(); }
   void resize(size_type sz, T c = T());
   size_type capacity() const { return _capacity; }
-  bool empty() const {};
+  bool empty() const { return _size == 0; }
 
   void reserve(size_type n) {
     pointer new_vec;
@@ -104,7 +105,7 @@ class vector {
     if (_capacity) alloc.deallocate(vec, _capacity);
     _capacity = n;
     vec = new_vec;
-  };
+  }
 
   // element access:
   reference operator[](size_type n) { return *(vec + n); }
@@ -124,7 +125,7 @@ class vector {
       reserve(_size * 2);
     alloc.construct(vec + _size, x);
     _size++;
-  };
+  }
 
   void pop_back();
   iterator insert(iterator position, const T &x);
