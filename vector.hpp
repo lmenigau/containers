@@ -58,7 +58,7 @@ class vector {
   vector(const vector<T, Allocator> &x) {}
 
   ~vector() {
-    for (size_t i = 0; i < _size; i++) alloc.destroy(vec + i);
+    clear();
     alloc.deallocate(vec, _capacity);
   }
 
@@ -87,7 +87,9 @@ class vector {
   // 23.2.4.2 capacity:
   size_type size() const { return _size; }
   size_type max_size() const { return alloc.max_size(); }
-  void resize(size_type sz, T c = T());
+  void resize(size_type sz, T c = T()){
+
+  };
   size_type capacity() const { return _capacity; }
   bool empty() const { return _size == 0; }
 
@@ -127,15 +129,28 @@ class vector {
     _size++;
   }
 
-  void pop_back();
-  iterator insert(iterator position, const T &x);
-  void insert(iterator position, size_type n, const T &x);
+  void pop_back(){
+    alloc.destroy(vec + _size - 1);
+    _size--;
+  };
+
+  iterator insert(iterator position, const T &x) {
+
+    return position;
+  }
+
+  void insert(iterator position, size_type n, const T &x) {}
   template <class InputIterator>
   void insert(iterator position, InputIterator first, InputIterator last);
   iterator erase(iterator position);
   iterator erase(iterator first, iterator last);
   void swap(vector<T, Allocator> &);
-  void clear() { _size = 0; }
+  void clear() {
+    for (size_t i = 0; i < _size; i++) {
+      alloc.destroy(vec + i);
+    }
+    _size = 0;
+  }
 };
 }  // namespace ft
 #endif
