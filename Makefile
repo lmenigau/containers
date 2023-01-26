@@ -1,5 +1,5 @@
 CXX		= c++
-SFLAGS = -fsanitize=address
+#SFLAGS = -fsanitize=address
 CXXFLAGS := $(SFLAGS) -g -std=c++98 -Wall -Wextra -Werror -Wno-unused-parameter
 SRC = clear.cpp main.cpp
 OBJ_FT := $(addprefix ft_, $(SRC:.cpp=.o))
