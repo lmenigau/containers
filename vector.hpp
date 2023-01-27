@@ -39,7 +39,10 @@ class vector {
 
   template <typename Integer>
   void init_dispatch(Integer n, const T &value, true_type) {
-    alloc.allocate(n);
+    if (size_type(n) > max_size())
+      throw std::length_error("ft::vector::vector length_error");
+    vec = alloc.allocate(n);
+    _capacity = n;
     for (size_type i = 0; i < (size_type)n; i++) {
       alloc.construct(vec + i, value);
     }
@@ -128,14 +131,12 @@ class vector {
   explicit vector(size_type n, const T &value = T(),
                   const Allocator &a = Allocator())
       : alloc(a) {
-    Ralloc alloc(a);
     init_dispatch(n, value, true_type());
   }
 
   template <class InputIterator>
   vector(InputIterator first, InputIterator last,
          const allocator_type &a = Allocator()) : alloc(a) {
-    Ralloc alloc(a);
     init_dispatch(first, last, is_integral<InputIterator>());
   }
   vector(const vector<T, Allocator> &x) {}
