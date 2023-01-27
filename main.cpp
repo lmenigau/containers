@@ -25,6 +25,8 @@ int main() {
                 << " capa:" << v2.capacity() << "\n";
       v2.insert(v2.end(), n);
     }
+    v2.insert(v2.end(), 10, 999999);
+    v2.insert(v2.begin(), 10, 88888);
     // v2.resize(10);
     // for (int n = 0; n < max_elements; ++n) {
     //   if (v2.size() == v2.capacity()) {
@@ -33,7 +35,7 @@ int main() {
     //             << " capa:" << v2.capacity() << "\n";
     //   v2.insert(v2.end(), n);
     // }
-    for (int n = 0; n < max_elements; ++n) {
+    for (size_t n = 0; n < v2.size(); ++n) {
       std::cout << "v: " << v2[n] << '\n';
     }
     v2.clear();

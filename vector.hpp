@@ -46,12 +46,69 @@ class vector {
       push_back(*first);
     }
   }
+
   template <typename Integer>
-  void insert_dispatch(iterator position, Integer n, const T &x, true_type) {}
+  iterator insert_dispatch(iterator position, Integer n, const T &x, true_type) {
+    if (_size + n < _capacity) {
+      if (position == end())
+        for (Integer i(0); i < n; i++)
+          alloc.construct(end() + i , x);
+      else {
+        for (Integer i(0); i < n; i++)
+          alloc.construct(end() - i, *(end() - i - 1));
+        T x_copy = x;
+        std::copy_backward(position, end(), end() + 1);
+        for (Integer i(0); i < n; i++)
+          alloc.construct(position + i , x_copy);
+      }
+    } else {
+      size_type new_cap =
+          grow_check(n, "ft::vector insert length_error");
+      pointer new_vec = alloc.allocate(new_cap);
+      pointer new_end(new_vec);
+      pointer i(vec);
+      try {
+        for (; i < position ; i++)
+          alloc.construct(new_end, *i);
+        for (; i < position + n ; i++)
+          alloc.construct(new_end, x);
+        for (; i < vec + _size; i++)
+          alloc.construct(new_end, *i);
+      } catch (...) {
+        for (pointer j(new_vec); j < new_end; j++) alloc.destroy(j);
+        alloc.deallocate(new_vec, new_cap);
+        throw;
+      }
+      for (size_t j = 0; j < _size; j++) alloc.destroy(vec + j);
+      if (vec)
+        alloc.deallocate(vec, _size);
+      vec = new_vec;
+      _capacity = new_cap;
+    }
+    _size += n;
+    return position;
+  }
+
+  template <class InputIterator>
+  void insert_range(iterator position, InputIterator first, InputIterator last, std::input_iterator_tag)
+  {
+      vector tmp(first, last);
+      insert(position, tmp.begin(), tmp.end());
+  }
+
+  template <class InputIterator>
+  void insert_range(iterator position, InputIterator first, InputIterator last, std::forward_iterator_tag)
+  {
+
+  }
 
   template <class InputIterator>
   void insert_dispatch(iterator position, InputIterator first,
-                       InputIterator last, false_type) {}
+                       InputIterator last, false_type) {
+
+    typedef typename iterator_traits<InputIterator>::iterator_category tag;
+    insert_range(position, first, last, tag());
+  }
 
  public:
   vector() : vec(0), _size(0), _capacity(0) {}
@@ -67,8 +124,7 @@ class vector {
   vector(InputIterator first, InputIterator last,
          const allocator_type &a = Allocator())
       : _size(0), _capacity(0) {
-    typedef typename is_integral<InputIterator>::value _Integral;
-    assign_dispatch(first, last, _Integral());
+    assign_dispatch(first, last, is_integral<InputIterator>());
   }
   vector(const vector<T, Allocator> &x) {}
 
@@ -80,8 +136,7 @@ class vector {
   vector<T, Allocator> &operator=(const vector<T, Allocator> &x);
   template <class InputIterator>
   void assign(InputIterator first, InputIterator last) {
-    typedef typename is_integral<InputIterator>::value _Integral;
-    assign_dispatch(first, last, _Integral());
+    assign_dispatch(first, last, is_integral<InputIterator>());
   }
 
   void assign(size_type n, const T &u) {
@@ -194,14 +249,29 @@ class vector {
     _size++;
     return position;
   }
-  void insert(iterator position, size_type n, const T &x) {}
+  void insert(iterator position, size_type n, const T &x) {
+    insert_dispatch(position, n, x, true_type());
+  }
   template <class InputIterator>
   void insert(iterator position, InputIterator first, InputIterator last) {
-    typedef typename is_integral<InputIterator>::value _Integral;
-    insert_dispatch(_Integral());
+    insert_dispatch(position, first, last, is_integral<InputIterator>());
   };
-  iterator erase(iterator position);
-  iterator erase(iterator first, iterator last);
+
+  iterator erase(iterator position)
+  {
+    alloc.destroy(position);
+    if (position != end())
+      std::copy(position + 1, end(), position);
+  };
+
+  iterator erase(iterator first, iterator last)
+  {
+    iterator it(last);
+    for (it = first ;it != last; it++)
+      alloc.destroy(it);
+    if (last != end())
+      std::copy(last, end(), first);
+  }
   void swap(vector<T, Allocator> &);
   void clear() {
     for (size_t i = 0; i < _size; i++) {

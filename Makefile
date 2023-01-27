@@ -14,7 +14,7 @@ DEPS = $(SRC:.cpp=.d)
 %.d: %.cpp
 	@set -e; rm -f $@; \
 		$(CXX) -MM $(CXXFLAGS) $< > $@.$$$$; \
-		sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+		sed 's,\($*\)\.o[ :]*,ft_\1.o std_\1.o $@ : ,g' < $@.$$$$ > $@; \
 		rm -f $@.$$$$
 
 include $(DEPS)
@@ -41,6 +41,6 @@ std: $(OBJ_STD)
 .PHONY: re
 
 clean:
-	$(RM) std ft std.out ft.out *.o
+	$(RM) std ft std.out ft.out *.o *.d
 
 re	: clean diff
