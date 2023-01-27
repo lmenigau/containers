@@ -68,11 +68,11 @@ class vector {
       pointer new_end(new_vec);
       pointer i(vec);
       try {
-        for (; i < position ; i++)
+        for (; i < position ; i++, new_end++)
           alloc.construct(new_end, *i);
-        for (; i < position + n ; i++)
+        for (; i < position + n ; i++, new_end++)
           alloc.construct(new_end, x);
-        for (; i < vec + _size; i++)
+        for (; i < end(); i++, new_end++)
           alloc.construct(new_end, *i);
       } catch (...) {
         for (pointer j(new_vec); j < new_end; j++) alloc.destroy(j);
