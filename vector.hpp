@@ -113,7 +113,8 @@ class vector {
   }
 
   template <typename Integer>
-  void assign_dispatch(Integer n, const T &value, true_type) {
+  void assign_dispatch(Integer ni, const T &value, true_type) {
+    size_type n(ni);
     if (n > _capacity) {
       vector tmp(n, value);
       swap(tmp);

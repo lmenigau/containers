@@ -31,3 +31,26 @@ void insert_fill() {
     for (size_t i  = 0; i < v2.size();i++)
       std::cout << v2[i] << "\n";
 }
+
+void assign_fill() {
+    NS::vector<int, allocator<int> > v2(10, 30);
+    std::cout << "assign fill end : \n";
+    v2.assign(10, 999999);
+    for (size_t i  = 0; i < v2.size();i++)
+      std::cout << v2[i] << "\n";
+    std::cout << "assign fill begin : \n";
+    v2.assign(10, 88888);
+    for (size_t i  = 0; i < v2.size();i++)
+      std::cout << v2[i] << "\n";
+
+    std::cout << "reserve\n";
+    v2.reserve(100);
+    std::cout << "assign fill end : \n";
+    v2.assign(10, 999999);
+    for (size_t i  = 0; i < v2.size();i++)
+      std::cout << v2[i] << "\n";
+    std::cout << "assign fill begin : \n";
+    v2.assign(10, 88888);
+    for (size_t i  = 0; i < v2.size();i++)
+      std::cout << v2[i] << "\n";
+}

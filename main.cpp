@@ -10,7 +10,9 @@
 
 void insert_fill();
 void insert_single();
+void assign_fill();
 
 int main() {
   insert_fill();
+  assign_fill();
 }
