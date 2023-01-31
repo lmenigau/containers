@@ -37,67 +37,187 @@ class vector {
   size_type _size;
   size_type _capacity;
 
+ public:
+  iterator begin() { return vec; }
+  const_iterator begin() const { return vec; }
+  iterator end() { return vec + _size; }
+  const_iterator end() const { return vec + _size; }
+  reverse_iterator rbegin() { return reverse_iterator(end()); }
+  const_reverse_iterator rbegin() const { return reverse_iterator(end()); }
+  reverse_iterator rend() { return reverse_iterator(begin()); }
+  const_reverse_iterator rend() const { return reverse_iterator(begin()); }
+
+  size_type capacity() const { return _capacity; }
+  bool empty() const { return _size == 0; }
+  size_type size() const { return _size; }
+  size_type max_size() const { return alloc.max_size(); }
+
+  void clear() {
+    for (size_t i = 0; i < _size; i++) {
+      alloc.destroy(vec + i);
+    }
+    _size = 0;
+  }
+
+ private:
   template <typename Integer>
   void init_dispatch(Integer n, const T &value, true_type) {
     if (size_type(n) > max_size())
       throw std::length_error("ft::vector::vector length_error");
     vec = alloc.allocate(n);
     _capacity = n;
-    for (size_type i = 0; i < (size_type)n; i++) {
-      alloc.construct(vec + i, value);
+    size_type i(0);
+    try {
+      for (; i < (size_type)n; i++) {
+        alloc.construct(vec + i, value);
+      }
+    } catch (...) {
+      for (; i >= 0; i--) {
+        alloc.destroy(vec + i);
+        throw;
+      }
     }
     _size = n;
   }
 
   template <typename InputIterator>
-  void init_dispatch(InputIterator first, InputIterator last, false_type) {}
+  void init_range(InputIterator first, InputIterator last,
+                  std::input_iterator_tag) {
+    try {
+      for (; first != last; first++) {
+        push_back(*first);
+      }
+    } catch (...) {
+      clear();
+      throw;
+    }
+  }
+
+  template <typename InputIterator>
+  void init_range(InputIterator first, InputIterator last,
+                  std::forward_iterator_tag) {
+    vec = alloc.allocate(std::distance(first, last));
+    try {
+      for (InputIterator it(first); it != last; it++, _size++)
+        alloc.construct(vec + _size);
+    } catch (...) {
+      clear();
+      throw;
+    }
+  }
+
+  template <typename InputIterator>
+  void init_dispatch(InputIterator first, InputIterator last, false_type) {
+    init_range(first, last,
+               iterator_traits<InputIterator>::iterator_category());
+  }
 
   template <typename Integer>
   void assign_dispatch(Integer n, const T &value, true_type) {
-    clear();
-    reserve(n);
-    for (size_type i = 0; i < (size_type)n; i++) {
-      alloc.construct(vec + i, value);
+    if (n > _capacity) {
+      vector tmp(n, value);
+      swap(tmp);
+    } else if (n >= _size) {
+      std::fill(begin(), end(), value);
+      size_type i(_size);
+      try {
+        for (; i < n; i++) alloc.construct(vec + i, value);
+      } catch (...) {
+        for (size_type j(_size); j < i; j++) alloc.destroy(vec + j);
+        throw;
+      }
+      _size = n;
+    } else if (n < _size) {
+      std::fill_n(vec, n, value);
+      for (size_type i(_size - n); i < _size; i++) alloc.destroy(vec + i);
+      _size = n;
     }
-    _size = n;
+  }
+
+  template <class InputIterator>
+  void assign_range(InputIterator first, InputIterator last,
+                    std::input_iterator_tag) {
+    pointer i(vec);
+    for (; i < end() && first != last; ++first) *i = *first;
+    if (first != last)
+      insert_range(end(), first, last, std::input_iterator_tag());
+    else {
+      for (; i < end(); i++) alloc.destroy(i);
+    }
+  }
+
+  template <class InputIterator>
+  void assign_range(InputIterator first, InputIterator last,
+                    std::forward_iterator_tag) {
+    size_type len(std::distance(first, last));
+    if (len > _capacity) {
+      pointer new_vec(alloc.allocate(len));
+      pointer new_end(new_vec);
+      try {
+        for (; first != last; ++first, new_end++)
+          alloc.construct(new_end, *first);
+      } catch (...) {
+        for (pointer i(new_vec); i < new_end; i++) alloc.destroy(i);
+        alloc.deallocate(new_vec, len);
+      }
+      clear();
+      alloc.deallocate(vec, _capacity);
+      vec = new_vec;
+      _size = len;
+      _capacity = len;
+    } else {
+      pointer i(vec);
+      for (; i < end() && first != last; ++first) *i = *first;
+      if (first != last) {
+        for (pointer j(i); j < end(); j++) alloc.destroy(j);
+        try {
+          for (; first != last; ++first, i++) alloc.construct(i, *first);
+        } catch (...) {
+          for (pointer j(vec + _size); j < i; j++) alloc.destroy(j);
+        }
+        _size = len;
+      } else {
+        for (; i < end(); i++) alloc.destroy(i);
+      }
+    }
   }
 
   template <class InputIterator>
   void assign_dispatch(InputIterator first, InputIterator last, false_type) {
-    for (; first < last; first++) {
-      push_back(*first);
-    }
+    assign_range(first, last,
+                 iterator_traits<InputIterator>::iterator_category());
   }
 
   template <typename Integer>
   iterator insert_dispatch(iterator position, Integer n, const T &x,
                            true_type) {
-    if (_size + n < _capacity) {
+    if (_size + n <= _capacity) {
       if (position == end())
         for (Integer i(0); i < n; i++) alloc.construct(end() + i, x);
       else {
         for (Integer i(0); i < n; i++)
           alloc.construct(end() - i, *(end() - i - 1));
         T x_copy = x;
-        std::copy_backward(position, end(), end() + 1);
+        std::copy_backward(position, end(), end() + n);
         for (Integer i(0); i < n; i++) alloc.construct(position + i, x_copy);
       }
     } else {
       size_type new_cap = grow_check(n, "ft::vector insert length_error");
       pointer new_vec = alloc.allocate(new_cap);
       pointer new_end(new_vec);
-      pointer i(vec);
+      pointer old(vec);
       try {
-        for (; i < position; i++, new_end++) alloc.construct(new_end, *i);
-        for (; i < position + n; i++, new_end++) alloc.construct(new_end, x);
-        for (; i < end(); i++, new_end++) alloc.construct(new_end, *i);
+        for (; old < position; old++, new_end++) alloc.construct(new_end, *old);
+        for (size_type j(0); j < size_type(n); j++, new_end++)
+          alloc.construct(new_end, x);
+        for (; old < end(); old++, new_end++) alloc.construct(new_end, *old);
       } catch (...) {
         for (pointer j(new_vec); j < new_end; j++) alloc.destroy(j);
         alloc.deallocate(new_vec, new_cap);
         throw;
       }
       for (size_t j = 0; j < _size; j++) alloc.destroy(vec + j);
-      if (vec) alloc.deallocate(vec, _size);
+      if (vec) alloc.deallocate(vec, _capacity);
       vec = new_vec;
       _capacity = new_cap;
     }
@@ -108,13 +228,52 @@ class vector {
   template <class InputIterator>
   void insert_range(iterator position, InputIterator first, InputIterator last,
                     std::input_iterator_tag) {
-    vector tmp(first, last);
-    insert(position, tmp.begin(), tmp.end());
+    if (position == end()) {
+      for (; first != last; ++first) insert(end(), *first);
+    } else {
+      vector tmp(first, last);
+      insert(position, tmp.begin(), tmp.end());
+    }
   }
 
   template <class InputIterator>
   void insert_range(iterator position, InputIterator first, InputIterator last,
-                    std::forward_iterator_tag) {}
+                    std::forward_iterator_tag) {
+    size_type n(std::distance(first, last));
+    if (_size + n <= _capacity) {
+      if (position == end())
+        for (pointer i(position); first != last; i++, ++first)
+          alloc.construct(i, *first);
+      else {
+        for (size_type i(0); i < n; i++)
+          alloc.construct(end() - i, *(end() - i - 1));
+        std::copy_backward(position, end(), end() + n);
+        for (pointer i(position); first != last; i++, ++first)
+          alloc.construct(i, *first);
+      }
+    } else {
+      size_type new_cap = grow_check(n, "ft::vector insert length_error");
+      pointer new_vec = alloc.allocate(new_cap);
+      pointer new_end(new_vec);
+      pointer old(vec);
+      try {
+        for (; old < position; old++, new_end++) alloc.construct(new_end, *old);
+        for (; first != last; ++first, new_end++)
+          alloc.construct(new_end, *first);
+        for (; old < end(); old++, new_end++) alloc.construct(new_end, *old);
+      } catch (...) {
+        for (pointer j(new_vec); j < new_end; j++) alloc.destroy(j);
+        alloc.deallocate(new_vec, new_cap);
+        throw;
+      }
+      for (size_t j = 0; j < _size; j++) alloc.destroy(vec + j);
+      if (vec) alloc.deallocate(vec, _capacity);
+      vec = new_vec;
+      _capacity = new_cap;
+    }
+    _size += n;
+    return position;
+  }
 
   template <class InputIterator>
   void insert_dispatch(iterator position, InputIterator first,
@@ -136,17 +295,35 @@ class vector {
 
   template <class InputIterator>
   vector(InputIterator first, InputIterator last,
-         const allocator_type &a = Allocator()) : alloc(a) {
+         const allocator_type &a = Allocator())
+      : alloc(a) {
     init_dispatch(first, last, is_integral<InputIterator>());
   }
-  vector(const vector<T, Allocator> &x) {}
+
+  vector(const vector &x)
+      : alloc(x.alloc),
+        vec(alloc.allocate(x._size)),
+        _size(0),
+        _capacity(_size) {
+    pointer d(vec);
+    try {
+      for (pointer s(x.vec); s < x.end(); s++, s++) alloc.construct(d, s);
+    } catch (...) {
+      for (pointer j(vec); j < d; j++) alloc.destroy(j);
+      throw;
+    }
+    _size = x.size;
+  }
 
   ~vector() {
     clear();
-    alloc.deallocate(vec, _capacity);
+    if (vec) alloc.deallocate(vec, _capacity);
   }
 
-  vector<T, Allocator> &operator=(const vector<T, Allocator> &x);
+  vector<T, Allocator> &operator=(const vector<T, Allocator> &x) {
+
+  }
+
   template <class InputIterator>
   void assign(InputIterator first, InputIterator last) {
     assign_dispatch(first, last, is_integral<InputIterator>());
@@ -156,24 +333,14 @@ class vector {
 
   allocator_type get_allocator() const { return alloc; }
 
-  // iterators:
-  iterator begin() { return vec; }
-  const_iterator begin() const { return vec; }
-  iterator end() { return vec + _size; }
-  const_iterator end() const { return vec + _size; }
-  reverse_iterator rbegin() { return reverse_iterator(end()); }
-  const_reverse_iterator rbegin() const { return reverse_iterator(end()); }
-  reverse_iterator rend() { return reverse_iterator(begin()); }
-  const_reverse_iterator rend() const { return reverse_iterator(begin()); }
-
-  // 23.2.4.2 capacity:
-  size_type size() const { return _size; }
-  size_type max_size() const { return alloc.max_size(); }
-  void resize(size_type sz, T c = T()){
-
-  };
-  size_type capacity() const { return _capacity; }
-  bool empty() const { return _size == 0; }
+  void resize(size_type sz, T c = T()) {
+    if (sz > _size)
+      insert_dispatch(end(), sz - _size, c, true_type());
+    else {
+      for (pointer i(vec + sz); i < _size; ++i) alloc.destroy(i);
+      _size = sz;
+    }
+  }
 
  private:
   size_type grow_check(size_t n, const char *s) {
@@ -188,8 +355,13 @@ class vector {
       throw std::length_error("ft::vector::reserve length_error");
     if (n <= _capacity) return;
     pointer new_vec(alloc.allocate(n));
-    for (size_type i = 0; i < _size; i++) {
-      alloc.construct(new_vec + i, vec[i]);
+    size_type i(0);
+    try {
+      for (; i < _size; i++) alloc.construct(new_vec + i, vec[i]);
+    } catch (...) {
+      for (size_type j(0); j < i; i++) alloc.destroy(new_vec + j);
+      alloc.deallocate(new_vec, n);
+      throw;
     }
     for (size_type i = 0; i < _size; i++) {
       alloc.destroy(vec + i);
@@ -220,8 +392,8 @@ class vector {
   void push_back(const T &x) { insert(end(), x); }
 
   void pop_back() {
-    alloc.destroy(vec + _size - 1);
     _size--;
+    alloc.destroy(vec + _size);
   };
 
  public:
@@ -251,7 +423,7 @@ class vector {
         throw;
       }
       for (size_t j = 0; j < _size; j++) alloc.destroy(vec + j);
-      if (vec) alloc.deallocate(vec, _size);
+      if (vec) alloc.deallocate(vec, _capacity);
       vec = new_vec;
       _capacity = new_cap;
     }
@@ -276,12 +448,10 @@ class vector {
     for (it = first; it != last; it++) alloc.destroy(it);
     if (last != end()) std::copy(last, end(), first);
   }
-  void swap(vector<T, Allocator> &);
-  void clear() {
-    for (size_t i = 0; i < _size; i++) {
-      alloc.destroy(vec + i);
-    }
-    _size = 0;
+  void swap(vector &other) {
+    std::swap(vec, other.vec);
+    std::swap(_size, other._size);
+    std::swap(_capacity, other._capacity);
   }
 };
 }  // namespace ft
