@@ -6,6 +6,7 @@
 
 #include "iterator.hpp"
 #include "type_traits.hpp"
+#include "algorithm.hpp"
 
 namespace ft {
 template <class T, class Allocator = std::allocator<T> >
@@ -279,7 +280,7 @@ class vector {
 
   template <class InputIterator>
   iterator insert_dispatch(iterator position, InputIterator first,
-                       InputIterator last, false_type) {
+                           InputIterator last, false_type) {
     typedef typename iterator_traits<InputIterator>::iterator_category tag;
     return insert_range(position, first, last, tag());
   }
@@ -461,5 +462,37 @@ class vector {
     std::swap(_capacity, other._capacity);
   }
 };
+
+template <class T, class Allocator>
+bool operator==(const vector<T, Allocator> &x, const vector<T, Allocator> &y) {
+  return x.size() == y.size() && equal(x.begin(), x.end(), y.begin());
+}
+template <class T, class Allocator>
+bool operator<(const vector<T, Allocator> &x, const vector<T, Allocator> &y) {
+  return lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
+}
+template <class T, class Allocator>
+bool operator!=(const vector<T, Allocator> &x, const vector<T, Allocator> &y) {
+  return !(x == y);
+}
+template <class T, class Allocator>
+bool operator>(const vector<T, Allocator> &x, const vector<T, Allocator> &y) {
+  return y < x;
+}
+template <class T, class Allocator>
+bool operator>=(const vector<T, Allocator> &x, const vector<T, Allocator> &y) {
+  return !(x < y);
+}
+template <class T, class Allocator>
+bool operator<=(const vector<T, Allocator> &x, const vector<T, Allocator> &y) {
+  return !(y < x);
+}
+
+template <class T, class Allocator>
+void swap(vector<T, Allocator> &x, vector<T, Allocator> &y)
+{
+  x.swap(y);
+}
+
 }  // namespace ft
 #endif
