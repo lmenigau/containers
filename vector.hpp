@@ -5,15 +5,12 @@
 #include <stdexcept>
 
 #include "iterator.hpp"
-#include "type_traits.h"
+#include "type_traits.hpp"
 
 namespace ft {
 template <class T, class Allocator = std::allocator<T> >
 class vector {
  private:
-  template <class It>
-  struct VecIterator
-      : iterator<random_access_iterator_tag, It, ptrdiff_t, It *, It &> {};
   typedef typename Allocator::template rebind<T>::other Ralloc;
 
  public:
@@ -99,7 +96,7 @@ class vector {
     vec = alloc.allocate(std::distance(first, last));
     try {
       for (InputIterator it(first); it != last; it++, _size++)
-        alloc.construct(vec + _size);
+        alloc.construct(vec + _size, *it);
     } catch (...) {
       clear();
       throw;
@@ -109,7 +106,7 @@ class vector {
   template <typename InputIterator>
   void init_dispatch(InputIterator first, InputIterator last, false_type) {
     init_range(first, last,
-               iterator_traits<InputIterator>::iterator_category());
+               typename iterator_traits<InputIterator>::iterator_category());
   }
 
   template <typename Integer>
@@ -186,7 +183,7 @@ class vector {
   template <class InputIterator>
   void assign_dispatch(InputIterator first, InputIterator last, false_type) {
     assign_range(first, last,
-                 iterator_traits<InputIterator>::iterator_category());
+                 typename iterator_traits<InputIterator>::iterator_category());
   }
 
   template <typename Integer>
@@ -238,8 +235,8 @@ class vector {
   }
 
   template <class InputIterator>
-  void insert_range(iterator position, InputIterator first, InputIterator last,
-                    std::forward_iterator_tag) {
+  iterator insert_range(iterator position, InputIterator first,
+                        InputIterator last, std::forward_iterator_tag) {
     size_type n(std::distance(first, last));
     if (_size + n <= _capacity) {
       if (position == end())
@@ -257,8 +254,10 @@ class vector {
       pointer new_vec = alloc.allocate(new_cap);
       pointer new_end(new_vec);
       pointer old(vec);
+      iterator new_pos;
       try {
         for (; old < position; old++, new_end++) alloc.construct(new_end, *old);
+        new_pos = new_end;
         for (; first != last; ++first, new_end++)
           alloc.construct(new_end, *first);
         for (; old < end(); old++, new_end++) alloc.construct(new_end, *old);
@@ -271,16 +270,18 @@ class vector {
       if (vec) alloc.deallocate(vec, _capacity);
       vec = new_vec;
       _capacity = new_cap;
+      _size += n;
+      return new_pos;
     }
     _size += n;
     return position;
   }
 
   template <class InputIterator>
-  void insert_dispatch(iterator position, InputIterator first,
+  iterator insert_dispatch(iterator position, InputIterator first,
                        InputIterator last, false_type) {
     typedef typename iterator_traits<InputIterator>::iterator_category tag;
-    insert_range(position, first, last, tag());
+    return insert_range(position, first, last, tag());
   }
 
  public:
@@ -308,12 +309,12 @@ class vector {
         _capacity(_size) {
     pointer d(vec);
     try {
-      for (pointer s(x.vec); s < x.end(); s++, s++) alloc.construct(d, s);
+      for (pointer s(x.vec); s < x.end(); s++, s++) alloc.construct(d, *s);
     } catch (...) {
       for (pointer j(vec); j < d; j++) alloc.destroy(j);
       throw;
     }
-    _size = x.size;
+    _size = x._size;
   }
 
   ~vector() {
@@ -322,7 +323,9 @@ class vector {
   }
 
   vector<T, Allocator> &operator=(const vector<T, Allocator> &x) {
+    _size = x._size;
 
+    return *this;
   }
 
   template <class InputIterator>
@@ -338,7 +341,7 @@ class vector {
     if (sz > _size)
       insert_dispatch(end(), sz - _size, c, true_type());
     else {
-      for (pointer i(vec + sz); i < _size; ++i) alloc.destroy(i);
+      for (pointer i(vec + sz); i < end(); ++i) alloc.destroy(i);
       _size = sz;
     }
   }
@@ -381,13 +384,13 @@ class vector {
 
   const_reference at(size_type n) const {
     if (n >= _size) throw std::out_of_range("ft::vector out of bound access");
-    return this[n];
+    return vec[n];
   }
-  reference at(size_type n) { return this[n]; }
-  reference front() { return vec; }
-  const_reference front() const { return vec; }
+  reference at(size_type n) { return vec[n]; }
+  reference front() { return *vec; }
+  const_reference front() const { return *vec; }
   reference back() { return *(vec + _size - 1); }
-  const_reference back() const { return back(); }
+  const_reference back() const { return *(vec + _size - 1); }
 
   // 23.2.4.3 modifiers:
   void push_back(const T &x) { insert(end(), x); }
@@ -431,23 +434,26 @@ class vector {
     _size++;
     return position;
   }
-  void insert(iterator position, size_type n, const T &x) {
-    insert_dispatch(position, n, x, true_type());
+
+  iterator insert(iterator position, size_type n, const T &x) {
+    return insert_dispatch(position, n, x, true_type());
   }
   template <class InputIterator>
-  void insert(iterator position, InputIterator first, InputIterator last) {
-    insert_dispatch(position, first, last, is_integral<InputIterator>());
+  iterator insert(iterator position, InputIterator first, InputIterator last) {
+    return insert_dispatch(position, first, last, is_integral<InputIterator>());
   };
 
   iterator erase(iterator position) {
     alloc.destroy(position);
     if (position != end()) std::copy(position + 1, end(), position);
+    return position;
   };
 
   iterator erase(iterator first, iterator last) {
     iterator it(last);
     for (it = first; it != last; it++) alloc.destroy(it);
     if (last != end()) std::copy(last, end(), first);
+    return last;
   }
   void swap(vector &other) {
     std::swap(vec, other.vec);

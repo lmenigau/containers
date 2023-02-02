@@ -13,6 +13,18 @@ void insert_single();
 void assign_fill();
 
 int main() {
+  using ft::vector;
+  vector<int> a(10, 4);
+  vector<int> b(10, 3);
+  
+  typedef vector<int>::reverse_iterator rit;
+  a = b;
+  rit rf(b.rbegin());
+  rit rl(b.rend());
+
+  while (rf != rl)
+    std::cout << *(rf++) << "\n";
+
   insert_fill();
   assign_fill();
 }
