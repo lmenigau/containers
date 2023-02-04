@@ -12,7 +12,7 @@ namespace ft {
                private:
                  template <class It>
                    struct BinaryTreeIterator :
-                     iterator<bidirectional_iterator_tag, It, ptrdiff_t, It*, It&> {};
+                     iterator<std::bidirectional_iterator_tag, It, ptrdiff_t, It*, It&> {};
                public:
                  // types:
                  typedef Key key_type;
