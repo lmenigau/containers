@@ -22,6 +22,9 @@ int main() {
   rit rf(b.rbegin());
   rit rl(b.rend());
 
+  vector<int> v(10);
+  
+  v.erase(v.begin(), v.begin() + 3);
   while (rf != rl)
     std::cout << *(rf++) << "\n";
 
