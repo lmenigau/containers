@@ -67,20 +67,22 @@ class vector {
     size_type len(static_cast<size_type>(n));
     if (len > max_size())
       throw std::length_error("ft::vector::vector length_error");
-    vec = alloc.allocate(len);
-    _capacity = len;
-    size_type i(0);
-    try {
-      for (; i < len; i++) {
-        alloc.construct(vec + i, value);
+    else if (len > 0) {
+      vec = alloc.allocate(len);
+      _capacity = len;
+      size_type i(0);
+      try {
+        for (; i < len; i++) {
+          alloc.construct(vec + i, value);
+        }
+      } catch (...) {
+        for (; i >= 0; i--) {
+          alloc.destroy(vec + i);
+          throw;
+        }
       }
-    } catch (...) {
-      for (; i >= 0; i--) {
-        alloc.destroy(vec + i);
-        throw;
-      }
+      _size = len;
     }
-    _size = len;
   }
 
   template <typename InputIterator>
@@ -100,6 +102,8 @@ class vector {
   void init_range(InputIterator first, InputIterator last,
                   std::forward_iterator_tag) {
     size_type len(std::distance(first, last));
+    if (!len)
+      return ;
     vec = alloc.allocate(len);
     _capacity = len;
     _size = 0;
@@ -148,8 +152,7 @@ class vector {
     for (; i < end() && first != last; ++first, ++i) *i = *first;
     if (first != last)
       insert_range(end(), first, last, std::input_iterator_tag());
-    else
-    {
+    else {
       for (pointer j(i); j < end(); j++) alloc.destroy(j);
       _size = i - vec;
     }
@@ -301,7 +304,7 @@ class vector {
       : alloc(a), vec(0), _size(0), _capacity(0) {}
   explicit vector(size_type n, const T &value = T(),
                   const Allocator &a = Allocator())
-      : alloc(a) {
+      : alloc(a), vec(0), _size(0), _capacity(0) {
     init_dispatch(n, value, true_type());
   }
 
@@ -314,7 +317,7 @@ class vector {
 
   vector(const vector &x)
       : alloc(x.alloc),
-        vec(alloc.allocate(x._size)),
+        vec(x._size > 0 ? alloc.allocate(x._size): 0),
         _size(0),
         _capacity(x._size) {
     pointer d(vec);
@@ -330,6 +333,7 @@ class vector {
   ~vector() {
     clear();
     if (_capacity) alloc.deallocate(vec, _capacity);
+    _capacity = 0;
   }
 
   vector<T, Allocator> &operator=(const vector<T, Allocator> &x) {
@@ -365,8 +369,7 @@ class vector {
 
  public:
   void reserve(size_type n) {
-    if (n > max_size())
-      throw std::length_error("vector::reserve");
+    if (n > max_size()) throw std::length_error("vector::reserve");
     if (n <= _capacity) return;
     pointer new_vec(alloc.allocate(n));
     size_type i(0);
@@ -468,11 +471,11 @@ class vector {
   };
 
   iterator erase(iterator first, iterator last) {
-    if (first != last && last != end()) 
-    {
+    if (first != last && last != end()) {
       std::copy(last, end(), first);
     }
-    for (pointer to_d(end() - (last - first)); to_d < end(); to_d++) alloc.destroy(to_d);
+    for (pointer to_d(end() - (last - first)); to_d < end(); to_d++)
+      alloc.destroy(to_d);
     _size -= last - first;
     return first;
   }
