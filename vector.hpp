@@ -471,9 +471,9 @@ class vector {
     if (first != last && last != end()) 
     {
       std::copy(last, end(), first);
-      for (pointer to_d(end() - (last - first)); to_d < end(); to_d++) alloc.destroy(to_d);
-      _size -= last - first;
     }
+    for (pointer to_d(end() - (last - first)); to_d < end(); to_d++) alloc.destroy(to_d);
+    _size -= last - first;
     return first;
   }
 
