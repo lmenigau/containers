@@ -102,8 +102,7 @@ class vector {
   void init_range(InputIterator first, InputIterator last,
                   std::forward_iterator_tag) {
     size_type len(std::distance(first, last));
-    if (!len)
-      return ;
+    if (!len) return;
     vec = alloc.allocate(len);
     _capacity = len;
     _size = 0;
@@ -173,7 +172,8 @@ class vector {
         alloc.deallocate(new_vec, len);
       }
       clear();
-      alloc.deallocate(vec, _capacity);
+      if (_capacity)
+        alloc.deallocate(vec, _capacity);
       vec = new_vec;
       _capacity = len;
     } else {
@@ -208,7 +208,7 @@ class vector {
           alloc.construct(end() - 1 + n - i, *(end() - 1 - i));
         T x_copy = x;
         std::copy_backward(position, end(), end() + n);
-        for (Integer i(0); i < n; i++) alloc.construct(position + i, x_copy);
+        std::fill_n(position, n, x_copy);
       }
     } else {
       size_type new_cap = grow_check(n, "ft::vector insert length_error");
@@ -317,7 +317,7 @@ class vector {
 
   vector(const vector &x)
       : alloc(x.alloc),
-        vec(x._size > 0 ? alloc.allocate(x._size): 0),
+        vec(x._size > 0 ? alloc.allocate(x._size) : 0),
         _size(0),
         _capacity(x._size) {
     pointer d(vec);
@@ -333,7 +333,6 @@ class vector {
   ~vector() {
     clear();
     if (_capacity) alloc.deallocate(vec, _capacity);
-    _capacity = 0;
   }
 
   vector<T, Allocator> &operator=(const vector<T, Allocator> &x) {
