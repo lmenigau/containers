@@ -5,6 +5,7 @@ SRC = \
 clear.cpp\
 insert_fill.cpp\
 insert_single.cpp\
+map.cpp\
 main.cpp
 
 OBJ_FT := $(addprefix ft_, $(SRC:.cpp=.o))
