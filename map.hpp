@@ -15,24 +15,125 @@ struct Node {
   struct Node *parent, *left, *right;
   T value;
   Node(const T& val) : color(Red), parent(), left(), right(), value(val) {}
+
+  static Node *mininum(Node *x)
+  {
+    while (x->left)
+      x = x->left;
+    return x;
+  }
+
+  static Node *maximum(Node *x)
+  {
+    while (x->right)
+      x = x->right;
+    return x;
+  }
+
+  static Node *increment(Node *x)
+  {
+    if (x->right)
+      return mininum(x->right);
+    Node *y(x->parent);
+    while (y && x == x->right)
+    {
+      x = y;
+      y = y->parent;
+    }
+    return y;
+  }
+
+  static Node *decrement(Node *x)
+  {
+    if (x->left)
+      return mininum(x->left);
+    Node *y(x->parent);
+    while (y && x == x->left)
+    {
+      x = y;
+      y = y->parent;
+    }
+    return y;
+  }
+
 };
+
 
 template <typename T>
 struct BTreeIterator {
   typedef T value_type;
   typedef ptrdiff_t difference_type;
   typedef T& reference;
+  typedef T* pointer;
   typedef std::bidirectional_iterator_tag iterator_category;
   typedef Node<T> Nt;
-  typedef Nt* pointer;
+  typedef Nt* Nodeptr;
 
-  BTreeIterator(const pointer n) : ptr(n) {}
-  T& operator*() {}
+  BTreeIterator(Nodeptr n) : ptr(n) {}
+  reference operator*() {return ptr->value;}
 
-  pointer base() { return ptr; }
+  BTreeIterator &operator++() {
+    ptr = Nt::increment(ptr);
+    return *this;
+  }
 
- private:
-  pointer ptr;
+  BTreeIterator operator++(int) {
+    BTreeIterator tmp = *this;
+    ptr = Nt::increment(ptr);
+    return tmp;
+  }
+
+  BTreeIterator &operator--() {
+    ptr = Nt::decrement(ptr);
+    return *this;
+  }
+
+  BTreeIterator operator--(int) {
+    BTreeIterator tmp = *this;
+    ptr = Nt::decrement(ptr);
+    return tmp;
+  }
+  Nodeptr ptr;
+};
+
+template <typename T>
+struct ConstBTreeIterator {
+  typedef T value_type;
+  typedef ptrdiff_t difference_type;
+  typedef T& reference;
+  typedef T* pointer;
+  typedef std::bidirectional_iterator_tag iterator_category;
+  typedef Node<T> Nt;
+  typedef const Nt* Nodeptr;
+  typedef BTreeIterator<T> iterator;
+
+  ConstBTreeIterator(Nodeptr* n) : ptr(n) {}
+
+  ConstBTreeIterator(const iterator &it):ptr(it.ptr) {}
+  reference operator*() {return ptr->value;}
+
+  ConstBTreeIterator &operator++() {
+    ptr = Nt::increment(ptr);
+    return *this;
+  }
+  ConstBTreeIterator operator++(int) {
+    ConstBTreeIterator tmp = *this;
+    ptr = Nt::increment(ptr);
+    return tmp;
+  }
+
+  ConstBTreeIterator &operator--() {
+    ptr = Nt::decrement(ptr);
+    return *this;
+  }
+
+  ConstBTreeIterator operator--(int) {
+    ConstBTreeIterator tmp = *this;
+    ptr = Nt::decrement(ptr);
+    return tmp;
+  }
+
+  Nodeptr ptr;
 };
 
 template <class value_type, class Compare, class Allocator>
@@ -40,9 +141,10 @@ class Rbtree {
  public:
   typedef Node<value_type> node_type;
   typedef BTreeIterator<value_type> iterator;
-  typedef BTreeIterator<const value_type> const_iterator;
+  typedef ConstBTreeIterator<value_type> const_iterator;
 
  private:
+  size_t count;
   node_type* root;
   Compare comp;
   Allocator alloc;
@@ -50,7 +152,7 @@ class Rbtree {
  public:
   explicit Rbtree(const Compare& comp = Compare(),
                   const Allocator& a = Allocator())
-      : comp(comp), alloc(a) {}
+      : count(), root(), comp(comp), alloc(a) {}
 
   node_type* create_node(const value_type& val) {
     node_type* n = alloc.allocate(1);
