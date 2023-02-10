@@ -16,9 +16,9 @@ std::ostream &operator<<(std::ostream &os, pair<T1, T2> &p) {
 }
 
 void map_insert() {
-  map<int, int> m;
-  typedef pair<map<int, int>::iterator, bool> res_t;
+  map<int, std::string> m;
+  typedef pair<map<int, std::string>::iterator, bool> res_t;
 
-  res_t res = m.insert(make_pair(10, 4));
+  res_t res = m.insert(make_pair(10, "lol"));
   std::cout << *(res.first);
 }

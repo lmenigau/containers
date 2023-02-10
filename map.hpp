@@ -5,6 +5,7 @@
 
 #include "iterator.hpp"
 #include "utility.hpp"
+#include "algorithm.hpp"
 
 namespace ft {
 
@@ -263,27 +264,42 @@ class map {
   pair<iterator, iterator> equal_range(const key_type& x);
   pair<const_iterator, const_iterator> equal_range(const key_type& x) const;
 };
+
 template <class Key, class T, class Compare, class Allocator>
 bool operator==(const map<Key, T, Compare, Allocator>& x,
-                const map<Key, T, Compare, Allocator>& y);
+                const map<Key, T, Compare, Allocator>& y){
+  return x.size() == y.size() && ft::equal(x.begin(), x.end(), y.begin());
+}
 template <class Key, class T, class Compare, class Allocator>
 bool operator<(const map<Key, T, Compare, Allocator>& x,
-               const map<Key, T, Compare, Allocator>& y);
+               const map<Key, T, Compare, Allocator>& y){
+  return ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
+}
 template <class Key, class T, class Compare, class Allocator>
 bool operator!=(const map<Key, T, Compare, Allocator>& x,
-                const map<Key, T, Compare, Allocator>& y);
+                const map<Key, T, Compare, Allocator>& y){
+  return !(x == y);
+}
 template <class Key, class T, class Compare, class Allocator>
 bool operator>(const map<Key, T, Compare, Allocator>& x,
-               const map<Key, T, Compare, Allocator>& y);
+               const map<Key, T, Compare, Allocator>& y){
+  return y < x;
+}
 template <class Key, class T, class Compare, class Allocator>
 bool operator>=(const map<Key, T, Compare, Allocator>& x,
-                const map<Key, T, Compare, Allocator>& y);
+                const map<Key, T, Compare, Allocator>& y){
+  return !(x < y);
+}
 template <class Key, class T, class Compare, class Allocator>
 bool operator<=(const map<Key, T, Compare, Allocator>& x,
-                const map<Key, T, Compare, Allocator>& y);
+                const map<Key, T, Compare, Allocator>& y){
+  return !(y < x);
+}
 // specialized algorithms:
 template <class Key, class T, class Compare, class Allocator>
 void swap(map<Key, T, Compare, Allocator>& x,
-          map<Key, T, Compare, Allocator>& y);
+          map<Key, T, Compare, Allocator>& y){
+  x.swap(y);
+}
 }  // namespace ft
 #endif

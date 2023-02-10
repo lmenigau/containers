@@ -11,7 +11,7 @@ struct binary_function {
 
 template <class T>
 struct less : binary_function<T, T, bool> {
-  bool operator()(const T &x, const T &y) const;
+  bool operator()(const T& x, const T& y) const;
 };
 
 template <class T1, class T2>
@@ -21,26 +21,44 @@ struct pair {
   T1 first;
   T2 second;
   pair();
-  pair(const T1 &x, const T2 &y) : first(x), second(y) {}
+  pair(const T1& x, const T2& y) : first(x), second(y) {}
   template <class U, class V>
-  pair(const pair<U, V> &p) : first(p.first), second(p.second) {}
+  pair(const pair<U, V>& p) : first(p.first), second(p.second) {}
 };
 
 template <class T1, class T2>
-bool operator==(const pair<T1, T2> &, const pair<T1, T2> &);
-template <class T1, class T2>
-bool operator<(const pair<T1, T2> &, const pair<T1, T2> &);
-template <class T1, class T2>
-bool operator!=(const pair<T1, T2> &, const pair<T1, T2> &);
-template <class T1, class T2>
-bool operator>(const pair<T1, T2> &, const pair<T1, T2> &);
-template <class T1, class T2>
-bool operator>=(const pair<T1, T2> &, const pair<T1, T2> &);
-template <class T1, class T2>
-bool operator<=(const pair<T1, T2> &, const pair<T1, T2> &);
-template <class T1, class T2>
+bool operator==(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs) {
+  return lhs.first == rhs.first && lhs.second == rhs.second;
+}
 
-pair<T1, T2> make_pair(const T1 &f, const T2 &s) {
+template <class T1, class T2>
+bool operator!=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs) {
+  return !(lhs == rhs);
+}
+
+template <class T1, class T2>
+bool operator<(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs) {
+  return lhs.first < rhs.first ||
+         (!(rhs.first < lhs.first) && lhs.second < rhs.second);
+}
+
+template <class T1, class T2>
+bool operator<=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs) {
+  return !(rhs < lhs);
+}
+
+template <class T1, class T2>
+bool operator>(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs) {
+  return rhs < lhs;
+}
+
+template <class T1, class T2>
+bool operator>=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs) {
+  return !(lhs < rhs);
+}
+
+template <class T1, class T2>
+pair<T1, T2> make_pair(const T1& f, const T2& s) {
   return pair<T1, T2>(f, s);
 }
 }  // namespace ft
