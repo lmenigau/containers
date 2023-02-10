@@ -37,10 +37,9 @@ $(OBJ_FT): ft_%.o: %.cpp
 $(OBJ_STD): std_%.o: %.cpp 
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-ft: CXXFLAGS += -D NS=ft
 ft: $(OBJ_FT)
 	$(CXX) $(CXXFLAGS) $(OBJ_FT) -o $@
-std: CXXFLAGS += -D NS=std
+std: CXXFLAGS += -D IS_STD
 std: $(OBJ_STD)
 	$(CXX) $(CXXFLAGS) $(OBJ_STD) -o $@
 

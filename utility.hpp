@@ -58,7 +58,7 @@ bool operator>=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs) {
 }
 
 template <class T1, class T2>
-pair<T1, T2> make_pair(const T1& f, const T2& s) {
+pair<T1, T2> make_pair(const T1 f, const T2 s) {
   return pair<T1, T2>(f, s);
 }
 }  // namespace ft

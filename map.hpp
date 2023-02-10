@@ -3,9 +3,9 @@
 #include <memory>
 #include <utility>
 
+#include "algorithm.hpp"
 #include "iterator.hpp"
 #include "utility.hpp"
-#include "algorithm.hpp"
 
 namespace ft {
 
@@ -17,48 +17,36 @@ struct Node {
   T value;
   Node(const T& val) : color(Red), parent(), left(), right(), value(val) {}
 
-  static Node *mininum(Node *x)
-  {
-    while (x->left)
-      x = x->left;
+  static Node* mininum(Node* x) {
+    while (x->left) x = x->left;
     return x;
   }
 
-  static Node *maximum(Node *x)
-  {
-    while (x->right)
-      x = x->right;
+  static Node* maximum(Node* x) {
+    while (x->right) x = x->right;
     return x;
   }
 
-  static Node *increment(Node *x)
-  {
-    if (x->right)
-      return mininum(x->right);
-    Node *y(x->parent);
-    while (y && x == x->right)
-    {
+  static Node* increment(Node* x) {
+    if (x->right) return mininum(x->right);
+    Node* y(x->parent);
+    while (y && x == x->right) {
       x = y;
       y = y->parent;
     }
     return y;
   }
 
-  static Node *decrement(Node *x)
-  {
-    if (x->left)
-      return mininum(x->left);
-    Node *y(x->parent);
-    while (y && x == x->left)
-    {
+  static Node* decrement(Node* x) {
+    if (x->left) return maximum(x->left);
+    Node* y(x->parent);
+    while (y && x == x->left) {
       x = y;
       y = y->parent;
     }
     return y;
   }
-
 };
-
 
 template <typename T>
 struct BTreeIterator {
@@ -67,34 +55,40 @@ struct BTreeIterator {
   typedef T& reference;
   typedef T* pointer;
   typedef std::bidirectional_iterator_tag iterator_category;
-  typedef Node<T> Nt;
-  typedef Nt* Nodeptr;
+  typedef Node<T> Node;
 
-  BTreeIterator(Nodeptr n) : ptr(n) {}
-  reference operator*() {return ptr->value;}
+  BTreeIterator(Node* n) : nodep(n) {}
+  reference operator*() { return nodep->value; }
 
-  BTreeIterator &operator++() {
-    ptr = Nt::increment(ptr);
+  BTreeIterator& operator++() {
+    nodep = Node::increment(nodep);
     return *this;
   }
 
   BTreeIterator operator++(int) {
     BTreeIterator tmp = *this;
-    ptr = Nt::increment(ptr);
+    nodep = Node::increment(nodep);
     return tmp;
   }
 
-  BTreeIterator &operator--() {
-    ptr = Nt::decrement(ptr);
+  BTreeIterator& operator--() {
+    nodep = Node::decrement(nodep);
     return *this;
   }
 
   BTreeIterator operator--(int) {
     BTreeIterator tmp = *this;
-    ptr = Nt::decrement(ptr);
+    nodep = Node::decrement(nodep);
     return tmp;
   }
-  Nodeptr ptr;
+  Node* nodep;
+  friend bool operator==(const BTreeIterator& x, const BTreeIterator& y) {
+    return x.nodep == x.nodep;
+  }
+
+  friend bool operator!=(const BTreeIterator& x, const BTreeIterator& y) {
+    return x.nodep != x.nodep;
+  }
 };
 
 template <typename T>
@@ -104,37 +98,46 @@ struct ConstBTreeIterator {
   typedef T& reference;
   typedef T* pointer;
   typedef std::bidirectional_iterator_tag iterator_category;
-  typedef Node<T> Nt;
-  typedef const Nt* Nodeptr;
+  typedef Node<T> Node;
   typedef BTreeIterator<T> iterator;
 
-  ConstBTreeIterator(Nodeptr* n) : ptr(n) {}
+  ConstBTreeIterator(Node* n) : nodep(n) {}
 
-  ConstBTreeIterator(const iterator &it):ptr(it.ptr) {}
-  reference operator*() {return ptr->value;}
+  ConstBTreeIterator(const iterator& it) : nodep(it.nodep) {}
+  reference operator*() { return nodep->value; }
 
-  ConstBTreeIterator &operator++() {
-    ptr = Nt::increment(ptr);
+  ConstBTreeIterator& operator++() {
+    nodep = Node::increment(nodep);
     return *this;
   }
   ConstBTreeIterator operator++(int) {
     ConstBTreeIterator tmp = *this;
-    ptr = Nt::increment(ptr);
+    nodep = Node::increment(nodep);
     return tmp;
   }
 
-  ConstBTreeIterator &operator--() {
-    ptr = Nt::decrement(ptr);
+  ConstBTreeIterator& operator--() {
+    nodep = Node::decrement(nodep);
     return *this;
   }
 
   ConstBTreeIterator operator--(int) {
     ConstBTreeIterator tmp = *this;
-    ptr = Nt::decrement(ptr);
+    nodep = Node::decrement(nodep);
     return tmp;
   }
 
-  Nodeptr ptr;
+  Node *nodep;
+
+  friend bool operator==(const ConstBTreeIterator& x,
+                         const ConstBTreeIterator& y) {
+    return x.nodep == x.nodep;
+  }
+
+  friend bool operator!=(const ConstBTreeIterator& x,
+                         const ConstBTreeIterator& y) {
+    return x.nodep != x.nodep;
+  }
 };
 
 template <class value_type, class Compare, class Allocator>
@@ -162,15 +165,35 @@ class Rbtree {
   }
 
   pair<iterator, bool> insert(const value_type& x) {
-    if (!this->root) {
-      this->root = create_node(x);
-      return make_pair(iterator(this->root), true);
+    node_type* i(this->root);
+    node_type* parent(0);
+
+    while (i) {
+      parent = i;
+      if (comp(x, i->value))
+        i = i->left;
+      else if (comp(i->value, x))
+        i = i->right;
+      else
+        return pair<iterator, bool>(iterator(i), false);
     }
-    return make_pair(iterator(this->root), false);
+    node_type* node = create_node(x);
+    if (!parent)
+      this->root = create_node(x);
+    else if (comp(x, parent->value))
+      parent->left = node;
+    else
+      parent->right = node;
+    node->parent = parent;
+    return pair<iterator, bool>(iterator(node), true);
   }
+  iterator begin() { return iterator(node_type::mininum(root)); };
+  const_iterator begin() const { return iterator(node_type::mininum(root)); }
+  iterator end() { return iterator(0); }
+  const_iterator end() const { return iterator(0); }
 };
 
-template <class Key, class T, class Compare = less<Key>,
+template <class Key, class T, class Compare = std::less<Key>,
           class Allocator = std::allocator<pair<const Key, T> > >
 class map {
  public:
@@ -225,10 +248,10 @@ class map {
   map<Key, T, Compare, Allocator>& operator=(
       const map<Key, T, Compare, Allocator>& x);
   // iterators:
-  iterator begin();
-  const_iterator begin() const;
-  iterator end();
-  const_iterator end() const;
+  iterator begin() { return tree.begin(); };
+  const_iterator begin() const { return tree.begin(); }
+  iterator end() { return tree.end(); }
+  const_iterator end() const { return tree.end(); }
   reverse_iterator rbegin();
   const_reverse_iterator rbegin() const;
   reverse_iterator rend();
@@ -267,38 +290,38 @@ class map {
 
 template <class Key, class T, class Compare, class Allocator>
 bool operator==(const map<Key, T, Compare, Allocator>& x,
-                const map<Key, T, Compare, Allocator>& y){
+                const map<Key, T, Compare, Allocator>& y) {
   return x.size() == y.size() && ft::equal(x.begin(), x.end(), y.begin());
 }
 template <class Key, class T, class Compare, class Allocator>
 bool operator<(const map<Key, T, Compare, Allocator>& x,
-               const map<Key, T, Compare, Allocator>& y){
+               const map<Key, T, Compare, Allocator>& y) {
   return ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
 }
 template <class Key, class T, class Compare, class Allocator>
 bool operator!=(const map<Key, T, Compare, Allocator>& x,
-                const map<Key, T, Compare, Allocator>& y){
+                const map<Key, T, Compare, Allocator>& y) {
   return !(x == y);
 }
 template <class Key, class T, class Compare, class Allocator>
 bool operator>(const map<Key, T, Compare, Allocator>& x,
-               const map<Key, T, Compare, Allocator>& y){
+               const map<Key, T, Compare, Allocator>& y) {
   return y < x;
 }
 template <class Key, class T, class Compare, class Allocator>
 bool operator>=(const map<Key, T, Compare, Allocator>& x,
-                const map<Key, T, Compare, Allocator>& y){
+                const map<Key, T, Compare, Allocator>& y) {
   return !(x < y);
 }
 template <class Key, class T, class Compare, class Allocator>
 bool operator<=(const map<Key, T, Compare, Allocator>& x,
-                const map<Key, T, Compare, Allocator>& y){
+                const map<Key, T, Compare, Allocator>& y) {
   return !(y < x);
 }
 // specialized algorithms:
 template <class Key, class T, class Compare, class Allocator>
 void swap(map<Key, T, Compare, Allocator>& x,
-          map<Key, T, Compare, Allocator>& y){
+          map<Key, T, Compare, Allocator>& y) {
   x.swap(y);
 }
 }  // namespace ft
