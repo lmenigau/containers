@@ -1,6 +1,6 @@
 
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
 
 #ifndef IS_STD
 #include "map.hpp"
@@ -40,14 +40,14 @@ void map_insert() {
     typedef pair<map::iterator, bool> res_t;
     typedef map::iterator it_t;
 
-    for (int i = 0; i < 9; i++)
-    {
-      res_t res = m.insert(make_pair(rand(), i));
+    for (int i = 0; i < 9; i++) {
+      res_t res(m.insert(make_pair(rand() % 100, i)));
       std::cout << *(res.first) << '\n';
     }
-    for (it_t i(m.begin()); i != m.end(); ++i)
-    {
-      std::cout << i.ptr << ' ' << *i << '\n';
+    std::cout << "--------------\n";
+    it_t i(m.begin());
+    for (; i != m.end(); ++i) {
+      std::cout << *i << '\n';
     }
   }
 }

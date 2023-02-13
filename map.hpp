@@ -1,5 +1,6 @@
 #ifndef MAP_HPP
 #define MAP_HPP
+#include <iostream>
 #include <memory>
 #include <utility>
 
@@ -30,7 +31,7 @@ struct Node {
   static Node* increment(Node* x) {
     if (x->right) return mininum(x->right);
     Node* y(x->parent);
-    while (y && x == x->right) {
+    while (y && x == y->right) {
       x = y;
       y = y->parent;
     }
@@ -40,7 +41,7 @@ struct Node {
   static Node* decrement(Node* x) {
     if (x->left) return maximum(x->left);
     Node* y(x->parent);
-    while (y && x == x->left) {
+    while (y && x == y->left) {
       x = y;
       y = y->parent;
     }
@@ -83,11 +84,11 @@ struct BTreeIterator {
   }
   Node* nodep;
   friend bool operator==(const BTreeIterator& x, const BTreeIterator& y) {
-    return x.nodep == x.nodep;
+    return x.nodep == y.nodep;
   }
 
   friend bool operator!=(const BTreeIterator& x, const BTreeIterator& y) {
-    return x.nodep != x.nodep;
+    return x.nodep != y.nodep;
   }
 };
 
@@ -131,12 +132,12 @@ struct ConstBTreeIterator {
 
   friend bool operator==(const ConstBTreeIterator& x,
                          const ConstBTreeIterator& y) {
-    return x.nodep == x.nodep;
+    return x.nodep == y.nodep;
   }
 
   friend bool operator!=(const ConstBTreeIterator& x,
                          const ConstBTreeIterator& y) {
-    return x.nodep != x.nodep;
+    return x.nodep != y.nodep;
   }
 };
 
