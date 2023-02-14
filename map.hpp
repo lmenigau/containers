@@ -38,15 +38,15 @@ struct Node {
       x = y;
       y = y->parent;
     }
-    if (x->right != y)
-      return y;
-    return x;
+    if (x->right == y) return x;
+    return y;
   }
 
   static Node* decrement(Node* x) {
     if (x->color == Red && x->parent->parent == x)
       return x->right;
-    else if (x->left) return maximum(x->left);
+    else if (x->left)
+      return maximum(x->left);
     Node* y(x->parent);
     while (y && x == y->left) {
       x = y;
@@ -192,6 +192,7 @@ class Rbtree {
       header.parent = header.right = header.left = node;
       return pair<iterator, bool>(iterator(node), true);
     }
+    node->parent = parent;
     if (comp(x, parent->value)) {
       parent->left = node;
       if (parent == header.left) header.left = node;
@@ -199,10 +200,87 @@ class Rbtree {
       parent->right = node;
       if (parent == header.right) header.right = node;
     }
-    node->parent = parent;
+    rebalance(node);
     ++count;
     return pair<iterator, bool>(iterator(node), true);
   }
+
+ private:
+  void right_rotate(node_type* const node) {
+    node_type* const save = node->left;
+    node->right = save->right;
+    if (save->right) {
+      save->right->parent = node;
+      save->parent = node->parent;
+    }
+    if (node == header.parent)
+      header.parent = save;
+    else if (node == node->parent->right)
+      node->parent->right = save;
+    else
+      node->parent->left = save;
+    save->right = node;
+    node->parent = save;
+  }
+
+  void left_rotate(node_type* const node) {
+    node_type* const save = node->right;
+    node->right = save->left;
+    if (save->left) {
+      save->left->parent = node;
+      save->parent = node->parent;
+    }
+    if (node == header.parent)
+      header.parent = save;
+    else if (node == node->parent->left)
+      node->parent->left = save;
+    else
+      node->parent->right = save;
+    save->left = node;
+    node->parent = save;
+  }
+
+  void rebalance(node_type* node) {
+    while (node != header.parent && node->parent->color == node_type::Red) {
+      node_type* const gp = node->parent->parent;
+      if (node->parent == gp->left) {
+        node_type* const u = gp->right;
+        if (u && u->color == node_type::Red) {
+          node->parent->color = node_type::Black;
+          u->color = node_type::Black;
+          gp->color = node_type::Red;
+          node = gp;
+        } else {
+          if (node == node->parent->right) {
+            node = node->parent;
+            left_rotate(node);
+          }
+          node->parent->color = node_type::Black;
+          gp->color = node_type::Red;
+          right_rotate(gp);
+        }
+      } else {
+        node_type* const u = gp->left;
+        if (u && u->color == node_type::Red) {
+          u->parent->color = node_type::Black;
+          u->color = node_type::Black;
+          gp->color = node_type::Red;
+          node = gp;
+        } else {
+          if (node && node == node->parent->left) {
+            node = node->parent;
+            right_rotate(node);
+          }
+          node->parent->color = node_type::Black;
+          gp->color = node_type::Red;
+          left_rotate(gp);
+        }
+      }
+    }
+    header.parent->color = node_type::Black;
+  }
+
+ public:
   iterator begin() { return iterator(header.left); };
   const_iterator begin() const { return iterator(header.left); }
   iterator end() { return iterator(&header); }

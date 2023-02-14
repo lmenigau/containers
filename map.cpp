@@ -41,8 +41,8 @@ void map_insert() {
     typedef pair<map::iterator, bool> res_t;
     typedef map::iterator it_t;
 
-    srandom(time(0));
-    for (int i = 0; i < 1; i++) {
+    srandom(std::time(0));
+    for (int i = 0; i < 8; i++) {
       res_t res(m.insert(make_pair(random(), i)));
       std::cout << *(res.first) << ' ' << res.second << '\n';
     }
