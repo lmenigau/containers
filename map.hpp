@@ -16,6 +16,9 @@ struct Node {
   Node_Color color;
   struct Node *parent, *left, *right;
   T value;
+
+  Node(Node* l, Node* r) : color(Red), parent(), left(l), right(r){};
+
   Node(const T& val) : color(Red), parent(), left(), right(), value(val) {}
 
   static Node* mininum(Node* x) {
@@ -31,15 +34,19 @@ struct Node {
   static Node* increment(Node* x) {
     if (x->right) return mininum(x->right);
     Node* y(x->parent);
-    while (y && x == y->right) {
+    while (x == y->right) {
       x = y;
       y = y->parent;
     }
-    return y;
+    if (x->right != y)
+      return y;
+    return x;
   }
 
   static Node* decrement(Node* x) {
-    if (x->left) return maximum(x->left);
+    if (x->color == Red && x->parent->parent == x)
+      return x->right;
+    else if (x->left) return maximum(x->left);
     Node* y(x->parent);
     while (y && x == y->left) {
       x = y;
@@ -128,7 +135,7 @@ struct ConstBTreeIterator {
     return tmp;
   }
 
-  Node *nodep;
+  Node* nodep;
 
   friend bool operator==(const ConstBTreeIterator& x,
                          const ConstBTreeIterator& y) {
@@ -150,14 +157,14 @@ class Rbtree {
 
  private:
   size_t count;
-  node_type* root;
   Compare comp;
   Allocator alloc;
+  node_type header;
 
  public:
   explicit Rbtree(const Compare& comp = Compare(),
                   const Allocator& a = Allocator())
-      : count(), root(), comp(comp), alloc(a) {}
+      : count(), comp(comp), alloc(a), header(&header, &header) {}
 
   node_type* create_node(const value_type& val) {
     node_type* n = alloc.allocate(1);
@@ -166,7 +173,7 @@ class Rbtree {
   }
 
   pair<iterator, bool> insert(const value_type& x) {
-    node_type* i(this->root);
+    node_type* i(header.parent);
     node_type* parent(0);
 
     while (i) {
@@ -179,19 +186,28 @@ class Rbtree {
         return pair<iterator, bool>(iterator(i), false);
     }
     node_type* node = create_node(x);
-    if (!parent)
-      this->root = create_node(x);
-    else if (comp(x, parent->value))
+    if (!parent) {
+      node->parent = &header;
+      node->color = node_type::Black;
+      header.parent = header.right = header.left = node;
+      return pair<iterator, bool>(iterator(node), true);
+    }
+    if (comp(x, parent->value)) {
       parent->left = node;
-    else
+      if (parent == header.left) header.left = node;
+    } else {
       parent->right = node;
+      if (parent == header.right) header.right = node;
+    }
     node->parent = parent;
+    ++count;
     return pair<iterator, bool>(iterator(node), true);
   }
-  iterator begin() { return iterator(node_type::mininum(root)); };
-  const_iterator begin() const { return iterator(node_type::mininum(root)); }
-  iterator end() { return iterator(0); }
-  const_iterator end() const { return iterator(0); }
+  iterator begin() { return iterator(header.left); };
+  const_iterator begin() const { return iterator(header.left); }
+  iterator end() { return iterator(&header); }
+  const_iterator end() const { return iterator(&header); }
+  size_t size() const { return count; }
 };
 
 template <class Key, class T, class Compare = std::less<Key>,
@@ -259,7 +275,7 @@ class map {
   const_reverse_iterator rend() const;
   // capacity:
   bool empty() const;
-  size_type size() const;
+  size_type size() const { return tree.size(); }
   size_type max_size() const;
   // 23.3.1.2 element access:
   T& operator[](const key_type& x) {}
