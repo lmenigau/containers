@@ -8,8 +8,8 @@
 typedef ft::Node<ft::pair<const int, int> > bst_node;
 
 void bst_print_dot_null(int key, int nullcount, FILE* stream) {
-  fprintf(stream, "    null%d [shape=point];\n", nullcount);
-  fprintf(stream, "    %d -> null%d;\n", key, nullcount);
+  // fprintf(stream, "    null%d [shape=point];\n", nullcount);
+  // fprintf(stream, "    %d -> null%d;\n", key, nullcount);
 }
 
 void bst_print_dot_aux(bst_node* node, FILE* stream) {
@@ -34,6 +34,7 @@ void bst_print_dot_aux(bst_node* node, FILE* stream) {
 
 void bst_print_dot(bst_node* tree, FILE* stream) {
   fprintf(stream, "digraph BST {\n");
+  fprintf(stream, "node [style=\"filled\"];");
   fprintf(stream, "    node [fontname=\"Arial\"];\n");
 
   if (!tree)

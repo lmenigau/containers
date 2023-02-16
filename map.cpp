@@ -50,10 +50,9 @@ void map_insert() {
     // typedef pair<map::iterator, bool> res_t;
     typedef map::iterator it_t;
 
-    srandom(std::time(0));
     for (int i = 0; i < 128; i++) {
-      map::value_type val(random() % 128, i);
-      std::cout << val << std::endl;
+      map::value_type val(random() % 1024, i);
+      // std::cout << val << std::endl;
       try {
         m.insert(val);
       } catch (int) {
@@ -66,20 +65,21 @@ void map_insert() {
       // std::cout << *res.first << ' ' << res.second << '\n';
     }
 #ifndef IS_STD
-    bst_print_dot(m.get_rep().get_root(), stderr);
+     //bst_print_dot(m.get_rep().get_root(), stderr);
 #endif
-    std::cout << "--------------\n";
+    std::cout << "====forward=====\n";
     it_t i(m.begin());
     it_t l(m.end());
     for (; i != l; ++i) {
       std::cout << *i << '\n';
     }
-    // it_t b(m.end());
-    // l = m.begin();
-    // b--;
-    // for (i = b; i != l; --i) {
-    //   std::cout << *i << '\n';
-    // }
-    // std::cout << *i << '\n';
+    std::cout << "====backward=====\n";
+    it_t b(m.end());
+    l = m.begin();
+    --b;
+    for (i = b; i != l; --i) {
+      std::cout << *i << '\n';
+    }
+    std::cout << *i << '\n';
   }
 }

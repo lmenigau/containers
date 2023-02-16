@@ -192,7 +192,6 @@ class Rbtree {
     if (is_left) {
       parent->left = node;
       if (parent == &header) {
-        parent->color = node_type::Black;
         header.parent = node;
         header.right = node;
       } else if (parent == header.left)
