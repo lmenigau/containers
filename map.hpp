@@ -12,14 +12,14 @@ namespace ft {
 
 template <typename T>
 struct Node {
-  enum Node_Color { Red, Black };
+  enum Node_Color { Red = false, Black = true };
   Node_Color color;
   struct Node *parent, *left, *right;
   T value;
 
-  Node(Node* l, Node* r) : color(Red), parent(), left(l), right(r){};
+  Node(Node* l, Node* r) : color(Red), parent(0), left(l), right(r){};
 
-  Node(const T& val) : color(Red), parent(), left(), right(), value(val) {}
+  Node(const T& val) : color(Red), parent(0), left(0), right(0), value(val) {}
 
   static Node* mininum(Node* x) {
     while (x->left) x = x->left;
@@ -162,6 +162,8 @@ class Rbtree {
   node_type header;
 
  public:
+  node_type* get_root() { return header.parent; }
+
   explicit Rbtree(const Compare& comp = Compare(),
                   const Allocator& a = Allocator())
       : count(), comp(comp), alloc(a), header(&header, &header) {}
@@ -174,28 +176,27 @@ class Rbtree {
 
   pair<iterator, bool> insert(const value_type& x) {
     node_type* i(header.parent);
-    node_type* parent(0);
-
+    node_type* parent(&header);
+    bool is_left(true);
     while (i) {
       parent = i;
-      if (comp(x, i->value))
-        i = i->left;
-      else if (comp(i->value, x))
-        i = i->right;
-      else
-        return pair<iterator, bool>(iterator(i), false);
+      is_left = comp(x, i->value);
+      if (!is_left && !comp(i->value, x))
+        return pair<iterator, bool>(iterator(parent), false);
+      i = is_left ? i->left : i->right;
     }
+
     node_type* node = create_node(x);
-    if (!parent) {
-      node->parent = &header;
-      node->color = node_type::Black;
-      header.parent = header.right = header.left = node;
-      return pair<iterator, bool>(iterator(node), true);
-    }
     node->parent = parent;
-    if (comp(x, parent->value)) {
+
+    if (is_left) {
       parent->left = node;
-      if (parent == header.left) header.left = node;
+      if (parent == &header) {
+        parent->color = node_type::Black;
+        header.parent = node;
+        header.right = node;
+      } else if (parent == header.left)
+        header.left = node;
     } else {
       parent->right = node;
       if (parent == header.right) header.right = node;
@@ -208,11 +209,9 @@ class Rbtree {
  private:
   void right_rotate(node_type* const node) {
     node_type* const save = node->left;
-    node->right = save->right;
-    if (save->right) {
-      save->right->parent = node;
-      save->parent = node->parent;
-    }
+    node->left = save->right;
+    if (save->right) save->right->parent = node;
+    save->parent = node->parent;
     if (node == header.parent)
       header.parent = save;
     else if (node == node->parent->right)
@@ -226,10 +225,8 @@ class Rbtree {
   void left_rotate(node_type* const node) {
     node_type* const save = node->right;
     node->right = save->left;
-    if (save->left) {
-      save->left->parent = node;
-      save->parent = node->parent;
-    }
+    if (save->left) save->left->parent = node;
+    save->parent = node->parent;
     if (node == header.parent)
       header.parent = save;
     else if (node == node->parent->left)
@@ -262,12 +259,12 @@ class Rbtree {
       } else {
         node_type* const u = gp->left;
         if (u && u->color == node_type::Red) {
-          u->parent->color = node_type::Black;
+          node->parent->color = node_type::Black;
           u->color = node_type::Black;
           gp->color = node_type::Red;
           node = gp;
         } else {
-          if (node && node == node->parent->left) {
+          if (node == node->parent->left) {
             node = node->parent;
             right_rotate(node);
           }
@@ -333,6 +330,7 @@ class map {
   rep_type tree;
 
  public:
+  rep_type& get_rep() { return tree; }
   explicit map(const Compare& comp = Compare(), const Allocator& = Allocator())
       : tree(value_compare(comp)) {}
   template <class InputIterator>
