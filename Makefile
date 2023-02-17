@@ -1,22 +1,24 @@
 CXX		= clang++
 #SFLAGS = -fsanitize=address
 CXXFLAGS := $(SFLAGS) -g -std=c++98 -Wall -Wextra -Werror -Wno-unused-parameter
-SRC = \
+STD_SRC = \
 clear.cpp\
 insert_fill.cpp\
 insert_single.cpp\
 map.cpp\
 main.cpp
 
-OBJ_FT := $(addprefix ft_, $(SRC:.cpp=.o))
-OBJ_STD := $(addprefix std_, $(SRC:.cpp=.o))
+FT_SRC := $(STD_SRC) print_dot.cpp
+
+OBJ_STD := $(addprefix std_, $(STD_SRC:.cpp=.o))
+OBJ_FT := $(addprefix ft_, $(FT_SRC:.cpp=.o))
 
 .PHONY: test
 
 diff : std.out ft.out
 	diff std.out ft.out > $@ | exit 0
 
-DEPS = $(SRC:.cpp=.d)
+DEPS = $(FT_SRC:.cpp=.d)
 %.d: %.cpp
 	@set -e; rm -f $@; \
 		$(CXX) -MM $(CXXFLAGS) $< > $@.$$$$; \
@@ -34,18 +36,18 @@ ft.out: ft
 $(OBJ_FT): ft_%.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-$(OBJ_STD): std_%.o: %.cpp 
+$(OBJ_STD): std_%.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 ft: $(OBJ_FT)
 	$(CXX) $(CXXFLAGS) $(OBJ_FT) -o $@
-std: CXXFLAGS += -D IS_STD
+std: CXXFLAGS += -D IS_STD=true
 std: $(OBJ_STD)
 	$(CXX) $(CXXFLAGS) $(OBJ_STD) -o $@
 
 .PHONY: re
 
 clean:
-	$(RM) std ft std.out ft.out *.o *.d
+	$(RM) *.d *.o std.out ft.out std ft
 
 re	: clean diff

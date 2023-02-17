@@ -1,4 +1,3 @@
-
 #include <signal.h>
 #include <unistd.h>
 
@@ -6,46 +5,41 @@
 #include <ctime>
 #include <iostream>
 
-#include "debug.hpp"
-
-#ifndef IS_STD
-#include "map.hpp"
-using namespace ft;
-#else
+#include "test.hpp"
+#include "test_map.hpp"
+#if IS_STD
+  namespace ft = std;
 #include <map>
-using namespace std;
+#else
+#include "print_dot.hpp"
+#include "map.hpp"
 #endif
 
-template <class T1, class T2>
-std::ostream &operator<<(std::ostream &os, pair<T1, T2> &p) {
-  return os << '(' << p.first << ", " << p.second << ')';
-}
-
-map<int, int> m;
+ft::map<int, int> m;
 void handler(int sig) { throw sig; };
 
 void map_insert() {
   alarm(1);
   signal(SIGALRM, handler);
   {
-    typedef pair<map<int, int>::iterator, bool> res_t;
+    typedef ft::pair<ft::map<int, int>::iterator, bool> res_t;
 
-    res_t res = m.insert(make_pair(10, 4));
+    res_t res = m.insert(ft::make_pair(10, 4));
     std::cout << *(res.first) << '\n';
-    res = m.insert(make_pair(11, 4));
+    res = m.insert(ft::make_pair(11, 4));
     std::cout << *(res.first) << '\n';
   }
   {
-    typedef map<int, std::string> mapis;
+    typedef ft::map<int, std::string> mapis;
     mapis m;
-    typedef pair<mapis::iterator, bool> res_t;
-    res_t res = m.insert(make_pair(20, "fioes"));
+    typedef ft::pair<mapis::iterator, bool> res_t;
+    res_t res = m.insert(ft::make_pair(20, "fioes"));
     std::cout << *(res.first) << '\n';
-    res = m.insert(make_pair(21, "fioes"));
+    res = m.insert(ft::make_pair(21, "fioes"));
     std::cout << *(res.first) << '\n';
   }
   {
-    typedef map<int, int> map;
+    typedef ft::map<int, int> map;
     map m;
     // typedef pair<map::iterator, bool> res_t;
     typedef map::iterator it_t;
@@ -56,8 +50,8 @@ void map_insert() {
       try {
         m.insert(val);
       } catch (int) {
-#ifndef IS_STD
-        bst_print_dot(m.get_rep().get_root(), stderr);
+#if !IS_STD
+        bst_print_dot(m.get_rep().get_root(), std::cerr);
 #endif
         exit(1);
       }
@@ -65,7 +59,7 @@ void map_insert() {
       // std::cout << *res.first << ' ' << res.second << '\n';
     }
 #ifndef IS_STD
-     //bst_print_dot(m.get_rep().get_root(), stderr);
+        bst_print_dot(m.get_rep().get_root(), std::cerr);
 #endif
     std::cout << "====forward=====\n";
     it_t i(m.begin());

@@ -1,13 +1,12 @@
 #ifndef NS
 #define NS ft
 #endif
+
 #include <iostream>
 #include <cstdlib>
 #include <string>
-void insert_fill();
-void insert_single();
-void map_insert();
-void assign_fill();
+
+#include "test.hpp"
 
 int main(int ac, char **av) {
   if (ac ==2)

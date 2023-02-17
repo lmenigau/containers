@@ -64,6 +64,7 @@ template <typename T> struct ConstBTreeIterator {
     nodep = Node::increment(nodep);
     return *this;
   }
+
   ConstBTreeIterator operator++(int) {
     ConstBTreeIterator tmp = *this;
     nodep = Node::increment(nodep);
