@@ -1,4 +1,4 @@
-CXX		= c++
+CXX		= clang++
 #SFLAGS = -fsanitize=address
 CXXFLAGS := $(SFLAGS) -g -std=c++98 -Wall -Wextra -Werror -Wno-unused-parameter
 SRC = \
