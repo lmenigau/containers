@@ -43,6 +43,8 @@ public:
       ;
   }
 
+  void erase(iterator position) { node_type *node = position.nodep; }
+
   iterator insert(iterator position, const value_type &x) {}
 
   pair<iterator, bool> insert(const value_type &x) {
@@ -157,4 +159,4 @@ public:
   const_iterator end() const { return iterator(&header); }
   size_t size() const { return count; }
 };
-}
+} // namespace ft

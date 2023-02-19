@@ -8,7 +8,7 @@ insert_single.cpp\
 map.cpp\
 main.cpp
 
-FT_SRC := $(STD_SRC) print_dot.cpp
+FT_SRC := $(STD_SRC)
 
 OBJ_STD := $(addprefix std_, $(STD_SRC:.cpp=.o))
 OBJ_FT := $(addprefix ft_, $(FT_SRC:.cpp=.o))

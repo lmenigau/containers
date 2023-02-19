@@ -4,8 +4,11 @@
 #include <iterator>
 namespace ft {
 // 24.3, primitives:
-template <class Category, class T, class Distance = ptrdiff_t,
-          class Pointer = T*, class Reference = T&>
+template <class Category,
+          class T,
+          class Distance = ptrdiff_t,
+          class Pointer = T*,
+          class Reference = T&>
 struct iterator {
   typedef T value_type;
   typedef Distance difference_type;
@@ -45,7 +48,8 @@ template <class InputIterator, class Distance>
 void advance(InputIterator& i, Distance n);
 template <class InputIterator>
 typename iterator_traits<InputIterator>::difference_type distance(
-    InputIterator first, InputIterator last);
+    InputIterator first,
+    InputIterator last);
 // 24.4, predefined iterators:
 template <class Iterator>
 class reverse_iterator;
@@ -66,8 +70,7 @@ class reverse_iterator
   typedef typename iterator_traits<Iterator>::pointer pointer;
   reverse_iterator() {}
   explicit reverse_iterator(Iterator x) : current(x) {}
-  reverse_iterator(const reverse_iterator& x)
-    : current(x.current) {}
+  reverse_iterator(const reverse_iterator& x) : current(x.current) {}
   template <class U>
   reverse_iterator(const reverse_iterator<U>& u) : current(u.base()) {}
   Iterator base() const { return current; }
@@ -150,16 +153,15 @@ bool operator<=(const reverse_iterator<Iterator>& x,
 
 template <class Iterator, class IteratorR>
 typename reverse_iterator<Iterator>::difference_type operator-(
-    const reverse_iterator<Iterator>& x, const reverse_iterator<IteratorR>& y)
-{
+    const reverse_iterator<Iterator>& x,
+    const reverse_iterator<IteratorR>& y) {
   return y.base() - x.base();
 }
 
 template <class Iterator>
 reverse_iterator<Iterator> operator+(
     typename reverse_iterator<Iterator>::difference_type n,
-    const reverse_iterator<Iterator>& x)
-{
+    const reverse_iterator<Iterator>& x) {
   return reverse_iterator<Iterator>(x.base() - n);
 }
 

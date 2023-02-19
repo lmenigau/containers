@@ -2,16 +2,19 @@
 #define NS ft
 #endif
 
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
 #include <string>
 
 #include "test.hpp"
 
-int main(int ac, char **av) {
-  if (ac ==2)
+int main(int ac, char** av) {
+  long size = 16;
+  if (ac >= 2)
     srandom(std::atoi(av[1]));
-  map_insert();
+  if (ac >= 3)
+    size = std::atol(av[2]);
+  map_insert(size);
   // insert_fill();
   // assign_fill();
 }

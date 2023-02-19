@@ -8,17 +8,18 @@
 #include "test.hpp"
 #include "test_map.hpp"
 #if IS_STD
-  namespace ft = std;
+namespace ft = std;
 #include <map>
+#define bst_print_dot(...)
 #else
-#include "print_dot.hpp"
 #include "map.hpp"
+#include "print_dot.hpp"
 #endif
 
 ft::map<int, int> m;
 void handler(int sig) { throw sig; };
 
-void map_insert() {
+void map_insert(long size) {
   alarm(1);
   signal(SIGALRM, handler);
   {
@@ -44,23 +45,19 @@ void map_insert() {
     // typedef pair<map::iterator, bool> res_t;
     typedef map::iterator it_t;
 
-    for (int i = 0; i < 128; i++) {
-      map::value_type val(random() % 1024, i);
-      // std::cout << val << std::endl;
+    for (int i = 0; i < size; i++) {
+      map::value_type val(random() % size, i);
+      std::cout << val << std::endl;
       try {
         m.insert(val);
       } catch (int) {
-#if !IS_STD
-        bst_print_dot(m.get_rep().get_root(), std::cerr);
-#endif
+        bst_print_dot(m.get_rep().get_root(), i);
         exit(1);
       }
       // res_t res(m.insert(val));
       // std::cout << *res.first << ' ' << res.second << '\n';
     }
-#ifndef IS_STD
-        bst_print_dot(m.get_rep().get_root(), std::cerr);
-#endif
+    bst_print_dot(m.get_rep().get_root(), 0);
     std::cout << "====forward=====\n";
     it_t i(m.begin());
     it_t l(m.end());
