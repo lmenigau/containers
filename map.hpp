@@ -71,18 +71,22 @@ class map {
   map<Key, T, Compare, Allocator>& operator=(
       const map<Key, T, Compare, Allocator>& x);
   // iterators:
-  iterator begin() { return tree.begin(); };
+  iterator begin() { return tree.begin(); }
   const_iterator begin() const { return tree.begin(); }
   iterator end() { return tree.end(); }
   const_iterator end() const { return tree.end(); }
-  reverse_iterator rbegin() { return --tree.end(); };
-  const_reverse_iterator rbegin() const { return --tree.end(); };
-  reverse_iterator rend() { return tree.begin(); };
-  const_reverse_iterator rend() const { return tree.begin(); };
+  reverse_iterator rbegin() { return reverse_iterator(tree.end()); }
+  const_reverse_iterator rbegin() const {
+    return const_reverse_iterator(tree.end());
+  }
+  reverse_iterator rend() { return reverse_iterator(tree.begin()); }
+  const_reverse_iterator rend() const {
+    return const_reverse_iterator(tree.begin());
+  }
   // capacity:
   bool empty() const;
   size_type size() const { return tree.size(); }
-  size_type max_size() const { return tree.size(); };
+  size_type max_size() const { return tree.size(); }
   // 23.3.1.2 element access:
   T& operator[](const key_type& x) {}
   // modifiers:
@@ -112,7 +116,7 @@ class map {
   key_compare key_comp() const;
   value_compare value_comp() const;
   // 23.3.1.3 map operations:
-  iterator find(const key_type& x) { tree.find(x); };
+  iterator find(const key_type& x) { return tree.find(x); }
   const_iterator find(const key_type& x) const;
   size_type count(const key_type& x) const;
   iterator lower_bound(const key_type& x);

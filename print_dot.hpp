@@ -28,7 +28,7 @@ template <class Node> void bst_print_dot_aux(Node *node, std::ostream &os) {
     bst_print_null("r", node, os);
 }
 
-template <class Node> void bst_print_dot(Node *tree, long n) {
+template <class Node> void bst_print_dot(Node *tree, long n = 0) {
   std::ostringstream conv;
   conv << n;
   std::ofstream stream(("tree" + conv.str() + ".gv").c_str());

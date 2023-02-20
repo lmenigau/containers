@@ -1,5 +1,6 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
+#include <ostream>
 namespace ft {
 
 template <class Arg1, class Arg2, class Result>
