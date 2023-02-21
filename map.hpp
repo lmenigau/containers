@@ -103,7 +103,13 @@ class map {
   }
   void erase(iterator position) { tree.erase(position); }
 
-  size_type erase(const key_type& x) { tree.erase(tree.find(x)); }
+  size_type erase(const key_type& x) {
+    iterator it(tree.find(x));
+    if (it == tree.end())
+      return 0;
+    tree.erase(it);
+    return 1;
+  }
 
   void erase(iterator first, iterator last) {
     for (first; first != last; ++first)

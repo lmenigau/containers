@@ -1,6 +1,6 @@
 #include <signal.h>
-#include "test_map.hpp"
 #include "test.hpp"
+#include "test_map.hpp"
 
 #include <algorithm>
 #include <cstdlib>
@@ -38,7 +38,6 @@ void safe_insert(C& c, typename C::value_type& val) {
 
 template <class C>
 void fill_random(C& c, long size) {
-  std::generate_n(std::inserter(c, c.begin()), size, random);
   for (long i = 0; i < size; i++) {
     typename C::value_type val(random() % size, i);
     safe_insert(c, val);

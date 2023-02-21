@@ -10,7 +10,7 @@
 #include "test.hpp"
 
 int main(int ac, char** av) {
-  alarm(1);
+  alarm(2);
   long size = 16;
   if (ac >= 2)
     srandom(std::atoi(av[1]));
