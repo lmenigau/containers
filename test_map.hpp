@@ -63,24 +63,20 @@ template <class C>
 void rev_print(C& c) {
   std::for_each(c.rbegin(), c.rend(), pair_print<C>);
 }
+template <class Map2=ft::map<int, int> >
+struct find_map;
 
-template <class Container>
 struct Binder {
-  template <class T>
-  struct rebind {
-    typedef Binder<T> other;
-  };
-};
-
-template <class Map2>
-struct find_map {
   template <class T>
   struct rebind {
     typedef find_map<T> other;
   };
+};
 
+template <class Map2>
+struct find_map : public Binder{
   template <class Map>
-  void operator()(Map& m, long size) {
+    void operator()(Map& m, long size) {
     typedef typename Map::iterator Iterator;
     typedef typename Map::key_type Key;
 
@@ -96,6 +92,7 @@ struct find_map {
     }
   }
 };
+
 
 template <class Map>
 void map_insert(long size) {

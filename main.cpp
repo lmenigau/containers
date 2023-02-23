@@ -24,6 +24,7 @@ struct test {
   test(long s, Function f) : size(s), std(), ft() {
     typedef typename Function::template rebind<std_map>::other Test;
     Test()(ft, size);
+    Test()(std, size);
   }
 };
 
