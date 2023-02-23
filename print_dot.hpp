@@ -7,13 +7,14 @@
 #include <sstream>
 
 template <class Node>
-void bst_print_null(std::string const &lr, Node *node, std::ostream &os) {
+void bst_print_null(std::string const& lr, Node* node, std::ostream& os) {
   os << lr << node->value.first << "[style=invis];\n";
   os << node->value.first << " -> " << lr << node->value.first
      << "[style=invis];\n";
 }
 
-template <class Node> void bst_print_dot_aux(Node *node, std::ostream &os) {
+template <class Node>
+void bst_print_dot_aux(Node* node, std::ostream& os) {
   if (node->color == Node::Red)
     os << node->value.first << "[color=red];\n";
   if (node->left) {
@@ -28,7 +29,8 @@ template <class Node> void bst_print_dot_aux(Node *node, std::ostream &os) {
     bst_print_null("r", node, os);
 }
 
-template <class Node> void bst_print_dot(Node *tree, long n = 0) {
+template <class Node>
+void bst_print_dot(Node* tree, long n = 0) {
   std::ostringstream conv;
   conv << n;
   std::ofstream stream(("tree" + conv.str() + ".gv").c_str());

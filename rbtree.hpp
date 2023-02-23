@@ -1,6 +1,6 @@
-#include "node.hpp"
 #include "rbt_iterator.hpp"
 #include "utility.hpp"
+#include <iostream>
 
 namespace ft {
 #pragma once
@@ -49,12 +49,13 @@ class Rbtree {
   pair<iterator, bool> insert(const value_type& x) {
     node_type* i(header.parent);
     node_type* parent(&header);
+    std::cout << x.second << "lol\n";
     bool is_left(true);
     while (i) {
       parent = i;
       is_left = comp(x, i->value);
       if (!is_left && !comp(i->value, x))
-        return pair<iterator, bool>(iterator(i), false);
+        return ft::make_pair(iterator(i), false);
       i = is_left ? i->left : i->right;
     }
 
@@ -75,7 +76,7 @@ class Rbtree {
     }
     rebalance(node);
     ++count;
-    return pair<iterator, bool>(iterator(node), true);
+    return ft::make_pair(iterator(node), true);
   }
 
  private:

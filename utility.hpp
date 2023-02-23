@@ -1,6 +1,5 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
-#include <ostream>
 namespace ft {
 
 template <class Arg1, class Arg2, class Result>
@@ -21,10 +20,16 @@ struct pair {
   typedef T2 second_type;
   T1 first;
   T2 second;
-  pair() : first(), second() {}
-  pair(const T1& x, const T2& y) : first(x), second(y) {}
+  explicit pair() : first(), second() {}
+  explicit pair(const T1& x, const T2& y) : first(x), second(y) {}
   template <class U, class V>
   pair(const pair<U, V>& p) : first(p.first), second(p.second) {}
+  explicit pair(const pair& p) : first(p.first), second(p.second) {}
+  pair& operator=( const pair& p ) {
+    first = p.first;
+    second = p.second;
+    return *this;
+  }
 };
 
 template <class T1, class T2>

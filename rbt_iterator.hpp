@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <iterator>
 #include "node.hpp"
 
@@ -14,6 +15,7 @@ struct BTreeIterator {
   typedef Node<T> Node;
 
   BTreeIterator(Node* n) : nodep(n) {}
+  // BTreeIterator(const BTreeIterator& it) : nodep(it.nodep) {}
   reference operator*() { return nodep->value; }
   pointer operator->() { return &nodep->value; }
 

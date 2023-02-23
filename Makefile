@@ -6,7 +6,6 @@ CXXFLAGS := -g -std=c++98 -Wall -Wextra -Werror -Wno-unused-parameter
 STD_SRC = clear.cpp\
 					insert_fill.cpp\
 					insert_single.cpp\
-					map.cpp\
 					main.cpp
 
 FT_SRC := $(STD_SRC)
@@ -29,7 +28,7 @@ arte:
 
 arte/%.d: %.cpp
 	@set -e; rm -f $@; \
-		$(CXX) -MM $(CXXFLAGS) $< > $@.$$$$; \
+		$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
 		sed 's,\($*\)\.o[ :]*, arte/ft_\1.o arte/std_\1.o $@ : ,g' < $@.$$$$ > $@; \
 		rm -f $@.$$$$
 
@@ -42,17 +41,17 @@ arte/ft.out: ft
 	./ft > arte/ft.out
 
 $(OBJ_FT): arte/ft_%.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(OBJ_STD): arte/std_%.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
 ft: $(OBJ_FT)
-	$(CXX) $(CXXFLAGS) $(OBJ_FT) -o $@
+	$(CXX) $(CXXFLAGS) $(ASANFLAGS) $(OBJ_FT) -o $@
 
-std: CXXFLAGS += -D IS_STD=true
+std: CPPFLAGS += -D IS_STD=true
 std: $(OBJ_STD)
-	$(CXX) $(CXXFLAGS) $(OBJ_STD) -o $@
+	$(CXX) $(CXXFLAGS) $(ASANFLAGS) $(OBJ_STD) -o $@
 
 .PHONY: as clean re
 
@@ -61,5 +60,6 @@ clean:
 
 re: all
 
-as: CXXFLAGS += -fsanitize=address
+as: ASANFLAGS += -fsanitize=address
+as: CXXFLAGS := $(ASANFLAGS) $(CXXFLAGS)
 as: all

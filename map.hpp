@@ -1,13 +1,7 @@
 #ifndef MAP_HPP
 #define MAP_HPP
-#include <iostream>
-#include <memory>
-#include <utility>
-
 #include "algorithm.hpp"
-#include "iterator.hpp"
 #include "rbtree.hpp"
-#include "utility.hpp"
 
 namespace ft {
 
