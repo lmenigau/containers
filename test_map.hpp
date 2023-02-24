@@ -63,20 +63,10 @@ template <class C>
 void rev_print(C& c) {
   std::for_each(c.rbegin(), c.rend(), pair_print<C>);
 }
-template <class Map2=ft::map<int, int> >
-struct find_map;
 
-struct Binder {
-  template <class T>
-  struct rebind {
-    typedef find_map<T> other;
-  };
-};
-
-template <class Map2>
-struct find_map : public Binder{
+struct find_map {
   template <class Map>
-    void operator()(Map& m, long size) {
+  void operator()(Map& m, long size) {
     typedef typename Map::iterator Iterator;
     typedef typename Map::key_type Key;
 
@@ -93,35 +83,58 @@ struct find_map : public Binder{
   }
 };
 
+template <typename>
+struct traits {};
 
-template <class Map>
-void map_insert(long size) {
-  Map m;
-  {
-    typedef ft::pair<typename Map::iterator, bool> res_t;
+template <class K, class V>
+struct traits<std::map<K, V> > {
+  typedef std::pair<typename std::map<K, V>::iterator, bool> res_t;
+};
 
-    res_t res = m.insert(ft::make_pair(10, 4));
-    std::cout << *(res.first) << '\n';
-    res = m.insert(ft::make_pair(11, 4));
-    std::cout << *(res.first) << '\n';
-  }
-  {
-    Map m;
-    typedef ft::pair<typename Map::iterator, bool> res_t;
-    res_t res = m.insert(ft::make_pair(20, typename Map::mapped_type()));
-    std::cout << *(res.first) << '\n';
-    res = m.insert(ft::make_pair(21, typename Map::mapped_type()));
-    std::cout << *(res.first) << '\n';
-  }
-  {
-    std::bind2nd(std::modulus<int>(), 2);
-    Map m;
-    // typedef pair<map::iterator, bool> res_t;
-    fill_random(m, size);
-    std::cout << "====forward=====\n";
-    print(m);
-    std::cout << "====backward=====\n";
-    rev_print(m);
-    bst_print_dot(m.get_rep().get_root(), 0);
-  }
+template <class K, class V>
+struct traits<ft::map<K, V> > {
+  typedef ft::pair<typename ft::map<K, V>::iterator, bool> res_t;
+};
+
+template <class K, class V>
+void print_map(std::map<K, V>& m) {}
+template <class K, class V>
+void print_map(ft::map<K, V>& m) {
+  bst_print_dot(m.get_rep().get_root(), 0);
 }
+
+struct map_insert {
+  template <class Map>
+  void operator()(Map& m, long size) {
+    {
+      // typedef typename P::template pair<typename Map::iterator, bool> res_t;
+
+      typedef typename traits<Map>::res_t res_t;
+      res_t res = m.insert(typename Map::value_type(10, 4));
+      pair_print<Map>(*(res.first));
+      res = m.insert(typename Map::value_type(11, 4));
+      pair_print<Map>(*(res.first));
+    }
+    {
+      Map m;
+      typedef typename traits<Map>::res_t res_t;
+      res_t res =
+          m.insert(typename Map::value_type(20, typename Map::mapped_type()));
+      pair_print<Map>(*(res.first));
+      res = m.insert(typename Map::value_type(21, typename Map::mapped_type()));
+      pair_print<Map>(*(res.first));
+    }
+    {
+      std::bind2nd(std::modulus<int>(), 2);
+      Map m;
+      // typedef pair<map::iterator, bool> res_t;
+      fill_random(m, size);
+      std::cout << "====forward=====\n";
+      print(m);
+      std::cout << "====backward=====\n";
+      rev_print(m);
+      print_map(m);
+      // bst_print_dot(m.get_rep().get_root(), 0);
+    }
+  }
+};
