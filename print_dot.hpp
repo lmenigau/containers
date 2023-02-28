@@ -6,25 +6,29 @@
 #include <fstream>
 #include <sstream>
 
-template <class Node>
-void bst_print_null(std::string const& lr, Node* node, std::ostream& os) {
+template <class T>
+void bst_print_null(std::string const& lr,
+                    ft::Node_Val<T>* node,
+                    std::ostream& os) {
   os << lr << node->value.first << "[style=invis];\n";
   os << node->value.first << " -> " << lr << node->value.first
      << "[style=invis];\n";
 }
 
-template <class Node>
-void bst_print_dot_aux(Node* node, std::ostream& os) {
-  if (node->color == Node::Red)
+template <class T>
+void bst_print_dot_aux(ft::Node_Val<T>* node, std::ostream& os) {
+  if (node->color == ft::Node::Red)
     os << node->value.first << "[color=red];\n";
   if (node->left) {
-    os << node->value.first << " -> " << node->left->value.first << ";\n";
-    bst_print_dot_aux(node->left, os);
+    os << node->value.first << " -> "
+       << ((ft::Node_Val<T>*)node->left)->value.first << ";\n";
+    bst_print_dot_aux((ft::Node_Val<T>*)node->left, os);
   } else
     bst_print_null("l", node, os);
   if (node->right) {
-    os << node->value.first << " -> " << node->right->value.first << ";\n";
-    bst_print_dot_aux(node->right, os);
+    os << node->value.first << " -> "
+       << ((ft::Node_Val<T>*)node->right)->value.first << ";\n";
+    bst_print_dot_aux((ft::Node_Val<T>*)node->right, os);
   } else
     bst_print_null("r", node, os);
 }

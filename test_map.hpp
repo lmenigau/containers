@@ -1,10 +1,14 @@
-#include <map>
+#include <iterator>
 #include "map.hpp"
+#include "vector.hpp"
 
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <map>
 #include <sstream>
+#include <typeinfo>
+#include <vector>
 
 #include "print_dot.hpp"
 
@@ -35,9 +39,9 @@ void safe_insert<std::map<int, int> >(std::map<int, int>& c,
 
 template <class C>
 void fill_random(C& c, long size) {
+  std::cout << __FILE__ << ":" << __LINE__ << " in " << __PRETTY_FUNCTION__;
   for (long i = 0; i < size; i++) {
-    int a = random() % size;
-    std::cout << i << "\n";
+    typename C::key_type a = random() % size;
     safe_insert(c, typename C::value_type(a, i));
   }
 }
@@ -50,13 +54,20 @@ std::string toString(const ft::pair<T1, T2>& pair) {
 }
 
 template <class C>
-void pair_print(typename C::value_type& pair) {
+void pair_print(C& pair) {
   std::cout << "<" << pair.first << ", " << pair.second << ">\n";
 }
 
-template <class C>
-void print(C& c) {
-  std::for_each(c.begin(), c.end(), pair_print<C>);
+template <class K, class V>
+void print(std::map<K, V>& c) {
+  std::for_each(c.begin(), c.end(),
+                pair_print<typename std::map<K, V>::value_type>);
+}
+
+template <class K, class V>
+void print(ft::map<K, V>& c) {
+  std::for_each(c.begin(), c.end(),
+                pair_print<typename ft::map<K, V>::value_type>);
 }
 
 template <class C>
@@ -71,7 +82,6 @@ struct find_map {
     typedef typename Map::key_type Key;
 
     fill_random(m, size);
-    print(m);
     for (long i = 0; i < size; i++) {
       Key k(random() % size);
       Iterator it(m.find(k));
@@ -107,8 +117,6 @@ struct map_insert {
   template <class Map>
   void operator()(Map& m, long size) {
     {
-      // typedef typename P::template pair<typename Map::iterator, bool> res_t;
-
       typedef typename traits<Map>::res_t res_t;
       res_t res = m.insert(typename Map::value_type(10, 4));
       pair_print<Map>(*(res.first));
@@ -117,24 +125,29 @@ struct map_insert {
     }
     {
       Map m;
-      typedef typename traits<Map>::res_t res_t;
-      res_t res =
-          m.insert(typename Map::value_type(20, typename Map::mapped_type()));
-      pair_print<Map>(*(res.first));
-      res = m.insert(typename Map::value_type(21, typename Map::mapped_type()));
-      pair_print<Map>(*(res.first));
-    }
-    {
-      std::bind2nd(std::modulus<int>(), 2);
-      Map m;
-      // typedef pair<map::iterator, bool> res_t;
       fill_random(m, size);
-      std::cout << "====forward=====\n";
-      print(m);
-      std::cout << "====backward=====\n";
-      rev_print(m);
-      print_map(m);
-      // bst_print_dot(m.get_rep().get_root(), 0);
     }
+  }
+};
+
+template <class C, class V>
+void fill_vector(C& c, V& v, long size) {
+  /* std::cout << __FILE__ << ":" << __LINE__ << " in " << __PRETTY_FUNCTION__;
+   */
+  for (long i = 0; i < size; i++) {
+    typename C::key_type a = v[i];
+    safe_insert(c, typename C::value_type(a, i));
+  }
+}
+
+struct map_erase {
+  template <class Map>
+  void operator()(Map& m, ft::vector<int>& v, long size) {
+    /* fill_random(m, size); */
+    fill_vector(m, v, size);
+    /* std::copy(v.begin(), v.end(), std::inserter(m, m.end())); */
+    /* print(m); */
+    for (long i = 0; i < size; i++)
+      m.erase(i);
   }
 };

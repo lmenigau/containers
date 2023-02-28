@@ -28,7 +28,7 @@ arte:
 
 arte/%.d: %.cpp
 	@set -e; rm -f $@; \
-		$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
+		$(CXX) -M $(CPPFLAGS) $< > $@.$$$$; \
 		sed 's,\($*\)\.o[ :]*, arte/ft_\1.o arte/std_\1.o $@ : ,g' < $@.$$$$ > $@; \
 		rm -f $@.$$$$
 

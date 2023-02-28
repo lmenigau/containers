@@ -1,18 +1,15 @@
 #pragma once
 
 namespace ft {
-template <typename T>
 struct Node {
   enum Node_Color { Red = false, Black = true };
   Node_Color color;
   struct Node *parent, *left, *right;
-  T value;
 
+  Node() :color(Red), parent(), left(), right(){}
   Node(Node* l, Node* r) : color(Red), parent(0), left(l), right(r){};
 
-  Node(const T& val) : color(Red), parent(0), left(0), right(0), value(val) {}
-
-  static Node* mininum(Node* x) {
+  static Node* minimum(Node* x) {
     while (x->left)
       x = x->left;
     return x;
@@ -26,7 +23,7 @@ struct Node {
 
   static Node* increment(Node* x) {
     if (x->right)
-      return mininum(x->right);
+      return minimum(x->right);
     Node* y(x->parent);
     while (x == y->right) {
       x = y;
@@ -49,5 +46,11 @@ struct Node {
     }
     return y;
   }
+};
+
+template <typename T>
+struct Node_Val : Node {
+  T value;
+  Node_Val(const T& val) : Node(), value(val) {}
 };
 }  // namespace ft

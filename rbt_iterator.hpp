@@ -12,12 +12,12 @@ struct BTreeIterator {
   typedef T& reference;
   typedef T* pointer;
   typedef std::bidirectional_iterator_tag iterator_category;
-  typedef Node<T> Node;
 
-  BTreeIterator(Node* n) : nodep(n) {}
+  BTreeIterator() : nodep() {}
+  BTreeIterator(const Node* n) : nodep(const_cast<Node*>(n)) {}
   // BTreeIterator(const BTreeIterator& it) : nodep(it.nodep) {}
-  reference operator*() { return nodep->value; }
-  pointer operator->() { return &nodep->value; }
+  reference operator*() const { return ((Node_Val<T>*)nodep)->value; }
+  pointer operator->() const { return &((Node_Val<T>*)&nodep)->value; }
 
   BTreeIterator& operator++() {
     nodep = Node::increment(nodep);
@@ -40,6 +40,7 @@ struct BTreeIterator {
     nodep = Node::decrement(nodep);
     return tmp;
   }
+
   Node* nodep;
   friend bool operator==(const BTreeIterator& x, const BTreeIterator& y) {
     return x.nodep == y.nodep;
@@ -52,19 +53,19 @@ struct BTreeIterator {
 
 template <typename T>
 struct ConstBTreeIterator {
-  typedef T value_type;
+  typedef const T value_type;
   typedef std::ptrdiff_t difference_type;
-  typedef T& reference;
-  typedef T* pointer;
+  typedef const T& reference;
+  typedef const T* pointer;
   typedef std::bidirectional_iterator_tag iterator_category;
-  typedef Node<T> Node;
   typedef BTreeIterator<T> iterator;
 
-  ConstBTreeIterator(Node* n) : nodep(n) {}
+  ConstBTreeIterator() : nodep() {}
+  ConstBTreeIterator(const Node* n) : nodep(const_cast<Node*>(n)) {}
 
-  ConstBTreeIterator(const iterator& it) : nodep(it.nodep) {}
-  reference operator*() { return nodep->value; }
-  pointer operator->() { return &nodep->value; }
+  ConstBTreeIterator(const iterator& it) : nodep(const_cast<Node*>(it.nodep)) {}
+  reference operator*() const { return ((Node_Val<const T>*)nodep)->value; }
+  pointer operator->() const { return &((Node_Val<const T>*)&nodep)->value; }
 
   ConstBTreeIterator& operator++() {
     nodep = Node::increment(nodep);

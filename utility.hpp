@@ -25,7 +25,7 @@ struct pair {
   template <class U, class V>
   pair(const pair<U, V>& p) : first(p.first), second(p.second) {}
   explicit pair(const pair& p) : first(p.first), second(p.second) {}
-  pair& operator=( const pair& p ) {
+  pair& operator=(const pair& p) {
     first = p.first;
     second = p.second;
     return *this;
