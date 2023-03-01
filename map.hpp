@@ -66,10 +66,11 @@ class map {
     for (; first != last; ++first)
       tree.insert(*first);
   }
-  map(const map<Key, T, Compare, Allocator>& x) : tree(x.tree) {}
-  ~map() { clear(); }
+  map(const map& x) : tree(x.tree) {}
   map<Key, T, Compare, Allocator>& operator=(
       const map<Key, T, Compare, Allocator>& x) {
+    if (this != &x)
+      tree = x.tree;
     return *this;
   }
   // iterators:
@@ -89,11 +90,13 @@ class map {
   // capacity:
   bool empty() const { return size() == 0; };
   size_type size() const { return tree.size(); }
-  size_type max_size() const { return tree.size(); }
+  size_type max_size() const { return tree.max_size(); }
 
   // 23.3.1.2 element access:
   T& operator[](const key_type& x) {
-    return tree.insert(value_type(x, mapped_type())).first->second;
+    value_type v(x, mapped_type());
+    iterator it = tree.insert(v).first;
+    return it->second;
   }
   // modifiers:
   pair<iterator, bool> insert(const value_type& x) { return tree.insert(x); }
@@ -118,17 +121,14 @@ class map {
   }
 
   void erase(iterator first, iterator last) {
-    for (; first != last; ++first)
-      erase(first);
+    while (first != last) {
+      erase(first++);
+    }
   }
 
-  void swap(map<Key, T, Compare, Allocator>& other) {
-    rep_type save = tree;
-    tree = other.tree;
-    other.tree = save;
-  }
+  void swap(map<Key, T, Compare, Allocator>& other) { tree.swap(other.tree); }
 
-  void clear() {}
+  void clear() { tree.clear(); }
 
   // observers:
   key_compare key_comp() const { return key_compare(); };

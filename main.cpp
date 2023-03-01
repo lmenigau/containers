@@ -70,6 +70,12 @@ int main(int ac, char** av) {
   /* t(i, find_map()); */
   /* } */
   /* t(size, map_insert()); */
-  for (int i = 0; i < 80000; i++)
+  for (int i = 0; i < 20; i++) {
     t(size, map_erase());
+    t(size, map_insert());
+    t(size, copy_construct());
+    t(size, range_construct());
+    t(size, range_erase());
+    t(size, map_insert_hint());
+  }
 }

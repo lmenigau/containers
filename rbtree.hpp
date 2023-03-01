@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include "node.hpp"
 #include "rbt_iterator.hpp"
 #include "utility.hpp"
@@ -13,6 +14,7 @@ class Rbtree {
   typedef ConstBTreeIterator<value_type> const_iterator;
 
  private:
+  typedef typename value_type::second_type mapped_t;
   size_t count;
   Compare comp;
   Allocator alloc;
@@ -21,46 +23,110 @@ class Rbtree {
  public:
   Node_Val* get_root() { return (Node_Val*)(header.parent); }
 
-  explicit Rbtree(const Compare& comp = Compare(),
-                  const Allocator& a = Allocator())
+  Rbtree(const Compare& comp, const Allocator& a = Allocator())
       : count(), comp(comp), alloc(a), header(&header, &header) {}
 
-  Node* create_node(const value_type& val) {
+  Rbtree(const Rbtree& other) : comp(other.comp) { *this = other; }
+
+  void swap(Rbtree& o) {
+    std::swap(count, o.count);
+    std::swap(comp, o.comp);
+    std::swap(alloc, o.alloc);
+    std::swap(header, o.header);
+  }
+
+  Node* copy(Node* orig, Node* parent) {
+    if (!orig)
+      return 0;
+    Node* root = create_node(static_cast<Node_Val*>(orig)->value);
+    root->color = orig->color;
+    root->left = copy(orig->left, root);
+    root->right = copy(orig->right, root);
+    root->parent = parent;
+    return root;
+  }
+
+  Rbtree& operator=(const Rbtree& src) {
+    if (this == &src)
+      return *this;
+    if (header.parent)
+      clear();
+    count = src.count;
+    comp = src.comp;
+    alloc = src.alloc;
+    header.parent = copy(src.header.parent, &header);
+    if (header.parent) {
+      header.left = Node::minimum(header.parent);
+      header.right = Node::maximum(header.parent);
+    }
+    return *this;
+  }
+
+  ~Rbtree() { clear(); }
+  Node_Val* create_node(const value_type& val) {
     Node_Val* n = alloc.allocate(1);
     alloc.construct(n, Node_Val(val));
     return n;
   }
 
+  void destroy_node(Node_Val* node) {
+    alloc.destroy(node);
+    --count;
+    alloc.deallocate(node, 1);
+  }
+
+  void destroy_all(Node* node) {
+    if (!node)
+      return;
+    destroy_all(node->left);
+    destroy_all(node->right);
+    destroy_node(static_cast<Node_Val*>(node));
+  }
+
+  void clear() {
+    destroy_all(header.parent);
+    header = Node(&header, &header);
+  };
+
   iterator lower_bound(const Key& x) const {
     Node* i(header.parent);
-    bool is_left(true);
+    iterator p(&header);
     while (i) {
-      is_left = comp(value_type(x, 0), static_cast<Node_Val*>(i)->value);
-      if (!is_left && !comp(((Node_Val*)i)->value, value_type(x, 0)))
-        return iterator(i);
-      i = is_left ? i->left : i->right;
+      bool cond =
+          comp(static_cast<Node_Val*>(i)->value, value_type(x, mapped_t()));
+      if (!cond) {
+        p = i;
+        i = i->left;
+      } else {
+        i = i->right;
+      }
     }
-    return (iterator(&header));
+    return p;
   }
 
   iterator upper_bound(const Key& x) const {
     Node* i(header.parent);
-    bool is_right(true);
+    iterator p(&header);
     while (i) {
-      is_right = comp(value_type(x, 0), ((Node_Val*)i)->value);
-      if (!is_right && !comp(((Node_Val*)i)->value, value_type(x, 0)))
-        return iterator(i);
-      i = is_right ? i->right : i->left;
+      bool cond =
+          comp(value_type(x, mapped_t()), static_cast<Node_Val*>(i)->value);
+      if (cond) {
+        p = i;
+        i = i->left;
+      } else {
+        i = i->right;
+      }
     }
-    return (iterator(&header));
+    return p;
   }
 
   iterator find(const Key& x) const {
     Node* i((Node_Val*)header.parent);
     bool is_left(true);
     while (i) {
-      is_left = comp(value_type(x, 0), ((Node_Val*)i)->value);
-      if (!is_left && !comp(((Node_Val*)i)->value, value_type(x, 0)))
+      is_left =
+          comp(value_type(x, mapped_t()), static_cast<Node_Val*>(i)->value);
+      if (!is_left && !comp(((Node_Val*)i)->value, value_type(x, mapped_t())))
         return iterator(i);
       i = is_left ? i->left : i->right;
     }
@@ -198,27 +264,12 @@ class Rbtree {
       }
     }
     rebalance_erase(x_parent, child, y);
-    count--;
+    destroy_node(static_cast<Node_Val*>(y));
     return y;
   }
 
-  iterator insert(iterator position, const value_type& x) {
-    return insert(x).first;
-  }
-
-  pair<iterator, bool> insert(const value_type& x) {
-    Node* i(header.parent);
-    Node* parent(&header);
-    bool is_left(true);
-    while (i) {
-      parent = i;
-      is_left = comp(x, ((Node_Val*)i)->value);
-      if (!is_left && !comp(((Node_Val*)i)->value, x))
-        return ft::make_pair(iterator(i), false);
-      i = is_left ? i->left : i->right;
-    }
-
-    Node* node = create_node(x);
+  iterator insert(bool is_left, Node* parent, const value_type& x) {
+    Node_Val* node = create_node(x);
     node->parent = parent;
 
     if (is_left) {
@@ -235,7 +286,29 @@ class Rbtree {
     }
     rebalance_insert(node);
     ++count;
-    return ft::make_pair(iterator(node), true);
+    return (iterator(node));
+  }
+
+  pair<iterator, bool> insert(const value_type& x) {
+    Node* i(header.parent);
+    Node* parent(&header);
+    bool is_left(true);
+    while (i) {
+      parent = i;
+      is_left = comp(x, ((Node_Val*)i)->value);
+      if (!is_left && !comp(((Node_Val*)i)->value, x))
+        return ft::make_pair(iterator(i), false);
+      i = is_left ? i->left : i->right;
+    }
+    return ft::make_pair(insert(is_left, parent, x), true);
+  }
+
+  iterator insert(iterator pos, const value_type& x) {
+    if (!pos.nodep->left && comp(x, *pos))
+      return insert(true, pos.nodep, x);
+    if (!pos.nodep->right && comp(x, *pos))
+      return insert(false, pos.nodep, x);
+    return insert(x).first;
   }
 
  private:
@@ -317,5 +390,6 @@ class Rbtree {
   iterator end() { return iterator(&header); }
   const_iterator end() const { return const_iterator(&header); }
   size_t size() const { return count; }
+  size_t max_size() const { return alloc.max_size(); }
 };
 }  // namespace ft

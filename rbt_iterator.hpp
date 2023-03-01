@@ -16,9 +16,12 @@ struct BTreeIterator {
   BTreeIterator() : nodep() {}
   BTreeIterator(const Node* n) : nodep(const_cast<Node*>(n)) {}
   // BTreeIterator(const BTreeIterator& it) : nodep(it.nodep) {}
-  reference operator*() const { return ((Node_Val<T>*)nodep)->value; }
-  pointer operator->() const { return &((Node_Val<T>*)&nodep)->value; }
-
+  reference operator*() const {
+    return static_cast<Node_Val<T>*>(nodep)->value;
+  }
+  pointer operator->() const {
+    return &static_cast<Node_Val<T>*>(nodep)->value;
+  }
   BTreeIterator& operator++() {
     nodep = Node::increment(nodep);
     return *this;
@@ -64,8 +67,12 @@ struct ConstBTreeIterator {
   ConstBTreeIterator(const Node* n) : nodep(const_cast<Node*>(n)) {}
 
   ConstBTreeIterator(const iterator& it) : nodep(const_cast<Node*>(it.nodep)) {}
-  reference operator*() const { return ((Node_Val<const T>*)nodep)->value; }
-  pointer operator->() const { return &((Node_Val<const T>*)&nodep)->value; }
+  reference operator*() const {
+    return static_cast<Node_Val<T>*>(nodep)->value;
+  }
+  pointer operator->() const {
+    return &static_cast<Node_Val<T>*>(nodep)->value;
+  }
 
   ConstBTreeIterator& operator++() {
     nodep = Node::increment(nodep);

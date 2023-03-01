@@ -6,8 +6,10 @@ struct Node {
   Node_Color color;
   struct Node *parent, *left, *right;
 
-  Node() :color(Red), parent(), left(), right(){}
+  Node() : color(Red), parent(0), left(0), right(0) {}
   Node(Node* l, Node* r) : color(Red), parent(0), left(l), right(r){};
+  // Node(const Node& o)
+  ////    : color(o.Red), parent(o.parent), left(o.left), right(o.right){};
 
   static Node* minimum(Node* x) {
     while (x->left)
@@ -51,6 +53,7 @@ struct Node {
 template <typename T>
 struct Node_Val : Node {
   T value;
+  Node_Val(const Node_Val& o) : Node(o), value(o.value) {}
   Node_Val(const T& val) : Node(), value(val) {}
 };
 }  // namespace ft

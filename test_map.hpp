@@ -113,23 +113,6 @@ void print_map(ft::map<K, V>& m) {
   bst_print_dot(m.get_rep().get_root(), 0);
 }
 
-struct map_insert {
-  template <class Map>
-  void operator()(Map& m, long size) {
-    {
-      typedef typename traits<Map>::res_t res_t;
-      res_t res = m.insert(typename Map::value_type(10, 4));
-      pair_print<Map>(*(res.first));
-      res = m.insert(typename Map::value_type(11, 4));
-      pair_print<Map>(*(res.first));
-    }
-    {
-      Map m;
-      fill_random(m, size);
-    }
-  }
-};
-
 template <class C, class V>
 void fill_vector(C& c, V& v, long size) {
   /* std::cout << __FILE__ << ":" << __LINE__ << " in " << __PRETTY_FUNCTION__;
@@ -140,6 +123,63 @@ void fill_vector(C& c, V& v, long size) {
   }
 }
 
+struct range_construct {
+  template <class Map>
+  void operator()(Map& m, ft::vector<int>& v, long size) {
+    fill_vector(m, v, size);
+    Map copy(m.rbegin(), m.rend());
+    for (long i = size; i > 0; i--)
+      copy.erase(i);
+    print(copy);
+    m = copy;
+  }
+};
+
+struct copy_construct {
+  template <class Map>
+  void operator()(Map& m, ft::vector<int>& v, long size) {
+    fill_vector(m, v, size);
+    Map copy(m);
+    m.clear();
+    m = copy;
+  }
+};
+
+struct map_insert_hint {
+  template <class Map>
+  void operator()(Map& m, ft::vector<int>& v, long size) {
+    typename Map::iterator pos = m.begin();
+    for (long i = 0; i < size; i++) {
+      typename Map::value_type a(v[i], i);
+      pos = m.insert(pos, a);
+    }
+  }
+};
+
+struct map_insert {
+  template <class Map>
+  void operator()(Map& m, ft::vector<int>& v, long size) {
+    {
+      typedef typename traits<Map>::res_t res_t;
+      res_t res = m.insert(typename Map::value_type(10, 4));
+      res = m.insert(typename Map::value_type(11, 4));
+    }
+    fill_vector(m, v, size);
+  }
+};
+
+struct range_erase {
+  template <class Map>
+  void operator()(Map& m, ft::vector<int>& v, long size) {
+    fill_vector(m, v, size);
+    typename Map::iterator f = m.begin();
+    typename Map::iterator l = m.end();
+    std::advance(f, 3);
+    std::advance(l, -2);
+    m.erase(f, l);
+  }
+};
+
 struct map_erase {
   template <class Map>
   void operator()(Map& m, ft::vector<int>& v, long size) {
@@ -147,7 +187,18 @@ struct map_erase {
     fill_vector(m, v, size);
     /* std::copy(v.begin(), v.end(), std::inserter(m, m.end())); */
     /* print(m); */
-    for (long i = 0; i < size; i++)
+    m.insert(typename Map::value_type(100, 3));
+    m.insert(typename Map::value_type(99, 3));
+    // m.erase(100);
+    m.erase((--m.end())->first);
+    m.erase((--m.end())->first);
+    for (long i = 0; i < size; i += 2)
       m.erase(i);
+    m.insert(typename Map::value_type(25, 3));
+    m.erase(25);
+    m.insert(typename Map::value_type(-3, 3));
+    m.erase(-3);
+    m.insert(typename Map::value_type(13, 3));
+    m.erase(-3);
   }
 };
