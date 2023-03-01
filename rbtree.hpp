@@ -58,7 +58,8 @@ class Rbtree {
     if (header.parent) {
       header.left = Node::minimum(header.parent);
       header.right = Node::maximum(header.parent);
-    }
+    } else
+      header = Node(&header, &header);
     return *this;
   }
 
