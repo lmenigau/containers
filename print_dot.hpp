@@ -4,6 +4,7 @@
 #include "utility.hpp"
 
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 
 template <class T>
@@ -36,7 +37,7 @@ void bst_print_dot_aux(ft::Node_Val<T>* node, std::ostream& os) {
 template <class Node>
 void bst_print_dot(Node* tree, long n = 0) {
   std::ostringstream conv;
-  conv << n;
+  conv << std::setw(3) << std::setfill('0') << n;
   std::ofstream stream(("tree" + conv.str() + ".gv").c_str());
 
   stream << "digraph RBT {\n"

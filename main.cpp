@@ -41,12 +41,12 @@ struct test {
     f(std, v, s);
     f(ft, v, s);
     if (!ft::equal(ft.begin(), ft.end(), std.begin())) {
+      std::cout << __FILE__ << ":" << __LINE__ << " in " << __PRETTY_FUNCTION__
+                << '\n';
       print(std);
       std::cout << "=========\n";
       print(ft);
-      print_map(ft);
-      std::cout << __FILE__ << ":" << __LINE__ << " in " << __PRETTY_FUNCTION__
-                << '\n';
+      /* print_map(ft, ); */
       std::cout << "KO at " << count << "\n";
     }
     std::cout << count++ << '\n';
@@ -77,5 +77,6 @@ int main(int ac, char** av) {
     t(size, range_construct());
     t(size, range_erase());
     t(size, map_insert_hint());
+    t(size, swap());
   }
 }

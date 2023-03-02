@@ -107,10 +107,10 @@ struct traits<ft::map<K, V> > {
 };
 
 template <class K, class V>
-void print_map(std::map<K, V>& m) {}
+void print_map(std::map<K, V>& m, int n) {}
 template <class K, class V>
-void print_map(ft::map<K, V>& m) {
-  bst_print_dot(m.get_rep().get_root(), 0);
+void print_map(ft::map<K, V>& m, int n) {
+  bst_print_dot(m.get_rep().get_root(), n);
 }
 
 template <class C, class V>
@@ -130,8 +130,19 @@ struct range_construct {
     Map copy(m.rbegin(), m.rend());
     for (long i = size; i > 0; i--)
       copy.erase(i);
-    print(copy);
+    // print(copy);
     m = copy;
+  }
+};
+
+struct swap {
+  template <class Map>
+  void operator()(Map& m, ft::vector<int>& v, long size) {
+    print(m);
+    Map t;
+    fill_vector(m, v, size);
+    t.swap(m);
+    print(m);
   }
 };
 
@@ -152,6 +163,7 @@ struct map_insert_hint {
     for (long i = 0; i < size; i++) {
       typename Map::value_type a(v[i], i);
       pos = m.insert(pos, a);
+      print_map(m, i);
     }
   }
 };

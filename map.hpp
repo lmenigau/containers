@@ -73,6 +73,7 @@ class map {
       tree = x.tree;
     return *this;
   }
+  ~map() { clear(); }
   // iterators:
   iterator begin() { return tree.begin(); }
   const_iterator begin() const { return tree.begin(); }

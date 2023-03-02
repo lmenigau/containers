@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+#include <ostream>
 #include "node.hpp"
 #include "rbt_iterator.hpp"
 #include "utility.hpp"
@@ -22,9 +23,8 @@ class Rbtree {
 
  public:
   Node_Val* get_root() { return (Node_Val*)(header.parent); }
-
   Rbtree(const Compare& comp, const Allocator& a = Allocator())
-      : count(), comp(comp), alloc(a), header(&header, &header) {}
+      : count(0), comp(comp), alloc(a), header(&header, &header) {}
 
   Rbtree(const Rbtree& other) : comp(other.comp) { *this = other; }
 
@@ -33,6 +33,22 @@ class Rbtree {
     std::swap(comp, o.comp);
     std::swap(alloc, o.alloc);
     std::swap(header, o.header);
+    if (header.parent)
+      header.parent->parent = &header;
+    if (o.header.parent)
+      o.header.parent->parent = &o.header;
+    if (!count) {
+      header.color = Node::Red;
+      header.parent = 0;
+      header.left = &header;
+      header.right = &header;
+    }
+    if (!o.count) {
+      o.header.color = Node::Red;
+      o.header.parent = 0;
+      o.header.left = &o.header;
+      o.header.right = &o.header;
+    }
   }
 
   Node* copy(Node* orig, Node* parent) {
@@ -305,10 +321,7 @@ class Rbtree {
   }
 
   iterator insert(iterator pos, const value_type& x) {
-    if (!pos.nodep->left && comp(x, *pos))
-      return insert(true, pos.nodep, x);
-    if (!pos.nodep->right && comp(x, *pos))
-      return insert(false, pos.nodep, x);
+    static_cast<void>(pos);
     return insert(x).first;
   }
 

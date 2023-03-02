@@ -8,8 +8,16 @@ struct Node {
 
   Node() : color(Red), parent(0), left(0), right(0) {}
   Node(Node* l, Node* r) : color(Red), parent(0), left(l), right(r){};
-  // Node(const Node& o)
-  ////    : color(o.Red), parent(o.parent), left(o.left), right(o.right){};
+  Node(const Node& o)
+      : color(o.Red), parent(o.parent), left(o.left), right(o.right){};
+
+  Node& operator=(const Node& o) {
+    color = o.color;
+    parent = o.parent;
+    left = o.left;
+    right = o.right;
+    return *this;
+  }
 
   static Node* minimum(Node* x) {
     while (x->left)
