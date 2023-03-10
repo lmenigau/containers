@@ -1,5 +1,6 @@
 #ifndef MAP_HPP
 #define MAP_HPP
+#include <stdexcept>
 #include "algorithm.hpp"
 #include "iterator.hpp"
 #include "rbtree.hpp"
@@ -99,6 +100,20 @@ class map {
     iterator it = tree.insert(v).first;
     return it->second;
   }
+
+  T& at(const Key& key) {
+    iterator i = tree.find(key);
+    if (i == end())
+      throw std::out_of_range("ft::map out_of_range");
+    return i->second;
+  }
+  const T& at(const Key& key) const {
+    iterator i = tree.find(key);
+    if (i == end())
+      throw std::out_of_range("ft::map out_of_range");
+    return i->second;
+  }
+
   // modifiers:
   pair<iterator, bool> insert(const value_type& x) { return tree.insert(x); }
 
@@ -133,7 +148,8 @@ class map {
 
   // observers:
   key_compare key_comp() const { return key_compare(); };
-  value_compare value_comp() const { return value_compare(key_compare()); };
+  value_compare value_comp() const { return value_compare(key_compare()); }
+  allocator_type get_allocator() const { return node_allocator(); }
 
   // 23.3.1.3 map operations:
   iterator find(const key_type& x) { return tree.find(x); }
